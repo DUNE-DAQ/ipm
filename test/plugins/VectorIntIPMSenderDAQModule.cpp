@@ -11,7 +11,7 @@
 
 #include "ipm/vectorintipmsenderdaqmodule/Nljs.hpp"
 
-#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/app/Nljs.hpp"
 
 #include "TRACE/trace.h"
 #include "ers/ers.h"
@@ -44,7 +44,7 @@ VectorIntIPMSenderDAQModule::VectorIntIPMSenderDAQModule(const std::string& name
 void
 VectorIntIPMSenderDAQModule::init(const data_t& init_data)
 {
-  auto ini = init_data.get<appfwk::cmd::ModInit>();
+  auto ini = init_data.get<appfwk::app::ModInit>();
   for (const auto& qi : ini.qinfos) {
     if (qi.name == "input") {
       ERS_INFO("VIISDM: input queue is " << qi.inst);

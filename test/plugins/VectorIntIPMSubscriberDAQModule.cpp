@@ -11,7 +11,7 @@
 
 #include "ipm/vectorintipmreceiverdaqmodule/Nljs.hpp"
 
-#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/app/Nljs.hpp"
 
 #include "TRACE/trace.h"
 
@@ -43,7 +43,7 @@ VectorIntIPMSubscriberDAQModule::VectorIntIPMSubscriberDAQModule(const std::stri
 void
 VectorIntIPMSubscriberDAQModule::init(const data_t& init_data)
 {
-  auto ini = init_data.get<appfwk::cmd::ModInit>();
+  auto ini = init_data.get<appfwk::app::ModInit>();
   for (const auto& qi : ini.qinfos) {
     if (qi.name == "output") {
       ERS_INFO("VIIRDM: output queue is " << qi.inst);
