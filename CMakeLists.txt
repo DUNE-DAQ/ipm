@@ -11,7 +11,7 @@ find_package(cppzmq REQUIRED)
 find_package(ers REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-daq_codegen_schema(*.jsonnet TEMPL Structs.hpp Nljs.hpp )
+daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 
 daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES appfwk::appfwk cppzmq)
 
