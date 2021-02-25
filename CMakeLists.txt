@@ -20,8 +20,8 @@ daq_add_plugin(ZmqReceiver duneIPM LINK_LIBRARIES ipm)
 daq_add_plugin(ZmqPublisher duneIPM LINK_LIBRARIES ipm)
 daq_add_plugin(ZmqSubscriber duneIPM LINK_LIBRARIES ipm)
 
-daq_add_plugin(VectorIntIPMSenderDAQModule     duneDAQModule TEST LINK_LIBRARIES ipm SCHEMA)
-daq_add_plugin(VectorIntIPMReceiverDAQModule   duneDAQModule TEST LINK_LIBRARIES ipm SCHEMA)
+daq_add_plugin(VectorIntIPMSenderDAQModule     duneDAQModule TEST LINK_LIBRARIES ipm )
+daq_add_plugin(VectorIntIPMReceiverDAQModule   duneDAQModule TEST LINK_LIBRARIES ipm )
 daq_add_plugin(VectorIntIPMSubscriberDAQModule duneDAQModule TEST LINK_LIBRARIES ipm)
 add_dependencies(ipm_VectorIntIPMSubscriberDAQModule_duneDAQModule ipm_VectorIntIPMReceiverDAQModule_duneDAQModule)
 
