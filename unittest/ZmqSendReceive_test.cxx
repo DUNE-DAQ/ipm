@@ -41,11 +41,11 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
 
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block);
   auto response = the_receiver->receive(Receiver::s_block);
-  BOOST_REQUIRE_EQUAL(response.m_data.size(), 4);
-  BOOST_REQUIRE_EQUAL(response.m_data[0], 'T');
-  BOOST_REQUIRE_EQUAL(response.m_data[1], 'E');
-  BOOST_REQUIRE_EQUAL(response.m_data[2], 'S');
-  BOOST_REQUIRE_EQUAL(response.m_data[3], 'T');
+  BOOST_REQUIRE_EQUAL(response.data.size(), 4);
+  BOOST_REQUIRE_EQUAL(response.data[0], 'T');
+  BOOST_REQUIRE_EQUAL(response.data[1], 'E');
+  BOOST_REQUIRE_EQUAL(response.data[2], 'S');
+  BOOST_REQUIRE_EQUAL(response.data[3], 'T');
 }
 
 BOOST_AUTO_TEST_SUITE_END()
