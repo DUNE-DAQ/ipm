@@ -70,14 +70,14 @@ protected:
       }
       if (res > 0 || hdr.more()) {
         TLOG(TLVL_TRACE + 3) << "Going to receive data";
-        output.m_metadata.resize(hdr.size());
-        memcpy(&output.m_metadata[0], hdr.data(), hdr.size());
+        output.metadata.resize(hdr.size());
+        memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
         // ZMQ guarantees that the entire message has arrived
         res = m_socket.recv(&msg);
         TLOG(TLVL_TRACE + 3) << "Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
-        output.m_data.resize(msg.size());
-        memcpy(&output.m_data[0], msg.data(), msg.size());
+        output.data.resize(msg.size());
+        memcpy(&output.data[0], msg.data(), msg.size());
       } else {
         usleep(1000);
       }
@@ -87,8 +87,8 @@ protected:
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG(TLVL_TRACE + 2) << "Returning output with metadata size " << output.m_metadata.size() << " and data size "
-                         << output.m_data.size();
+    TLOG(TLVL_TRACE + 2) << "Returning output with metadata size " << output.metadata.size() << " and data size "
+                         << output.data.size();
     return output;
   }
 
