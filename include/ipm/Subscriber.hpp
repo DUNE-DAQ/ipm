@@ -30,7 +30,7 @@
 
 #include "cetlib/BasicPluginFactory.h"
 #include "cetlib/compiler_macros.h"
-#include "ers/Issue.h"
+#include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
 
 #include <memory>
