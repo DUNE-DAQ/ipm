@@ -47,8 +47,8 @@ protected:
   Receiver::Response receive_(const duration_t& /* timeout */) override
   {
     Receiver::Response output;
-    output.m_data = std::vector<char>(s_bytes_on_each_receive, 'A');
-    output.m_metadata = "TEST";
+    output.data = std::vector<char>(s_bytes_on_each_receive, 'A');
+    output.metadata = "TEST";
 
     return output;
   }

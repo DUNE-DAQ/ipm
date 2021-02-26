@@ -86,8 +86,8 @@ public:
 
   struct Response
   {
-    std::string m_metadata{ "" };
-    std::vector<char> m_data{};
+    std::string metadata{ "" };
+    std::vector<char> data{};
   };
 
   Response receive(const duration_t& timeout, message_size_t num_bytes = s_any_size);
