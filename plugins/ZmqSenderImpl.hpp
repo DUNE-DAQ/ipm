@@ -13,7 +13,7 @@
 #include "ipm/Sender.hpp"
 #include "ipm/ZmqContext.hpp"
 
-#include "TRACE/trace.h"
+#include "logging/Logging.hpp"
 #include "zmq.hpp"
 
 #include <string>
@@ -37,7 +37,7 @@ public:
   void connect_for_sends(const nlohmann::json& connection_info)
   {
     std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG(TLVL_INFO) << "Connection String is " << connection_string;
+    TLOG() << "Connection String is " << connection_string;
     m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
     m_socket.bind(connection_string);
     m_socket_connected = true;
@@ -46,7 +46,7 @@ public:
 protected:
   void send_(const void* message, int N, const duration_t& timeout, std::string const& topic) override
   {
-    TLOG(TLVL_INFO) << "Starting send of " << N << " bytes";
+    TLOG_DEBUG(0) << "Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     bool res = false;
     do {
@@ -55,7 +55,7 @@ protected:
       res = m_socket.send(topic_msg, ZMQ_SNDMORE);
 
       if (!res) {
-        TLOG(TLVL_INFO) << "Unable to send message";
+        TLOG() << "Unable to send message";
         continue;
       }
 
@@ -67,7 +67,7 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG(TLVL_INFO) << "Completed send of " << N << " bytes";
+    TLOG_DEBUG(0) << "Completed send of " << N << " bytes";
   }
 
 private:
