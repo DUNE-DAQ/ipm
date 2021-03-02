@@ -33,12 +33,11 @@ dunedaq::ipm::Sender::send(const void* message,
 }
 
 void
-dunedaq::ipm::Sender::send_multipart(const void** message_parts,
-                                     const std::vector<message_size_t>& message_sizes,
+dunedaq::ipm::Sender::send_multipart(std::vector<std::pair<const void*, message_size_t>>& message_parts,
                                      const duration_t& timeout,
                                      std::string const& metadata)
 {
-  if (message_sizes.empty()) {
+  if (message_parts.empty()) {
     return;
   }
 
@@ -46,9 +45,5 @@ dunedaq::ipm::Sender::send_multipart(const void** message_parts,
     throw KnownStateForbidsSend(ERS_HERE);
   }
 
-  if (!message_parts) {
-    throw NullPointerPassedToSend(ERS_HERE);
-  }
-
-  send_multipart_(message_parts, message_sizes, timeout, metadata);
+  send_multipart_(message_parts, timeout, metadata);
 }

@@ -34,7 +34,9 @@ daq_add_unit_test(ZmqSender_test LINK_LIBRARIES ipm)
 daq_add_unit_test(ZmqReceiver_test LINK_LIBRARIES ipm)
 daq_add_unit_test(ZmqPublisher_test LINK_LIBRARIES ipm)
 daq_add_unit_test(ZmqSubscriber_test LINK_LIBRARIES ipm)
-set_tests_properties(ZmqSender_test ZmqReceiver_test ZmqPublisher_test ZmqSubscriber_test PROPERTIES ENVIRONMENT "CET_PLUGIN_PATH=${CMAKE_CURRENT_BINARY_DIR}/plugins:$ENV{CET_PLUGIN_PATH}")
+daq_add_unit_test(ZmqSendReceive_test LINK_LIBRARIES ipm)
+daq_add_unit_test(ZmqPubSub_test LINK_LIBRARIES ipm)
+set_tests_properties(ZmqSender_test ZmqReceiver_test ZmqPublisher_test ZmqSubscriber_test ZmqSendReceive_test ZmqPubSub_test PROPERTIES ENVIRONMENT "CET_PLUGIN_PATH=${CMAKE_CURRENT_BINARY_DIR}/plugins:$ENV{CET_PLUGIN_PATH}")
 
 
 daq_install()
