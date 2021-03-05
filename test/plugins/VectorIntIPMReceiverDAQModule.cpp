@@ -21,11 +21,6 @@
 #include <utility>
 #include <vector>
 
-/**
- * @brief Name used by TRACE TLOG calls from this source file
- */
-#define TRACE_NAME "VectorIntIPMReceiver" // NOLINT
-
 namespace dunedaq {
 namespace ipm {
 
@@ -86,7 +81,7 @@ VectorIntIPMReceiverDAQModule::do_work(std::atomic<bool>& running_flag)
   while (running_flag.load()) {
     if (m_input->can_receive()) {
 
-      TLOG_DEBUG(TLVL_TRACE) << get_name() << ": Creating output vector";
+      TLOG_DEBUG(1) << get_name() << ": Creating output vector";
       std::vector<int> output(m_num_ints_per_vector);
 
       try {
@@ -94,28 +89,28 @@ VectorIntIPMReceiverDAQModule::do_work(std::atomic<bool>& running_flag)
         auto recvd = m_input->receive(m_queue_timeout);
 
         if (recvd.data.size() == 0) {
-          TLOG_DEBUG(TLVL_TRACE) << "No data received, moving to next loop iteration";
+          TLOG_DEBUG(1) << "No data received, moving to next loop iteration";
           continue;
         }
 
         assert(recvd.data.size() == m_num_ints_per_vector * sizeof(int));
         memcpy(&output[0], &recvd.data[0], sizeof(int) * m_num_ints_per_vector);
       } catch (ReceiveTimeoutExpired const& rte) {
-        TLOG_DEBUG(TLVL_TRACE) << "ReceiveTimeoutExpired: " << rte.what();
+        TLOG_DEBUG(1) << "ReceiveTimeoutExpired: " << rte.what();
         continue;
       }
       oss << ": Received vector " << counter << " with size " << output.size();
       ers::info(ReceiverProgressUpdate(ERS_HERE, get_name(), oss.str()));
       oss.str("");
 
-      TLOG_DEBUG(TLVL_TRACE) << get_name() << ": Pushing vector into output_queue";
+      TLOG_DEBUG(1) << get_name() << ": Pushing vector into output_queue";
       try {
         m_output_queue->push(std::move(output), m_queue_timeout);
       } catch (const appfwk::QueueTimeoutExpired& ex) {
         ers::warning(ex);
       }
 
-      TLOG_DEBUG(TLVL_TRACE) << get_name() << ": End of do_work loop";
+      TLOG_DEBUG(1) << get_name() << ": End of do_work loop";
       counter++;
     } else {
       std::this_thread::sleep_for(std::chrono::seconds(1));

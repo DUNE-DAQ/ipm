@@ -9,8 +9,7 @@
 
 #include "ZmqReceiverImpl.hpp"
 
-#include "TRACE/trace.h"
-#define TRACE_NAME "ZmqReceiver"
+#include "logging/Logging.hpp"
 
 namespace dunedaq {
 namespace ipm {
