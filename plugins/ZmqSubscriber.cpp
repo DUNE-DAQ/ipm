@@ -23,14 +23,6 @@ public:
     : ZmqReceiverImpl(ZmqReceiverImpl::ReceiverType::Subscriber)
   {}
 };
-
-class ZmqReceiver : public ZmqReceiverImpl
-{
-public:
-  ZmqReceiver()
-    : ZmqReceiverImpl(ZmqReceiverImpl::ReceiverType::Pull)
-  {}
-};
 } // namespace ipm
 } // namespace dunedaq
 

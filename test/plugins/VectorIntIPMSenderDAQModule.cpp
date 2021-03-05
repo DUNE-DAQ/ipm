@@ -11,10 +11,9 @@
 
 #include "ipm/vectorintipmsenderdaqmodule/Nljs.hpp"
 
-#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/app/Nljs.hpp"
 
-#include "TRACE/trace.h"
-#include "ers/ers.h"
+#include "logging/Logging.hpp"
 
 #include <chrono>
 #include <functional>
@@ -44,10 +43,10 @@ VectorIntIPMSenderDAQModule::VectorIntIPMSenderDAQModule(const std::string& name
 void
 VectorIntIPMSenderDAQModule::init(const data_t& init_data)
 {
-  auto ini = init_data.get<appfwk::cmd::ModInit>();
+  auto ini = init_data.get<appfwk::app::ModInit>();
   for (const auto& qi : ini.qinfos) {
     if (qi.name == "input") {
-      ERS_INFO("VIISDM: input queue is " << qi.inst);
+      TLOG() <<"VIISDM: input queue is " << qi.inst;
       m_input_queue.reset(new appfwk::DAQSource<std::vector<int>>(qi.inst));
     }
   }
@@ -91,7 +90,7 @@ VectorIntIPMSenderDAQModule::do_work(std::atomic<bool>& running_flag)
   while (running_flag.load()) {
     if (m_input_queue->can_pop() && m_output->can_send()) {
 
-      TLOG(TLVL_TRACE) << get_name() << ": Going to receive data from input_queue";
+      TLOG_DEBUG(TLVL_TRACE) << get_name() << ": Going to receive data from input_queue";
 
       try {
         m_input_queue->pop(vec, m_queue_timeout);
@@ -99,7 +98,7 @@ VectorIntIPMSenderDAQModule::do_work(std::atomic<bool>& running_flag)
         continue;
       }
 
-      TLOG(TLVL_TRACE) << get_name() << ": Received vector of size " << vec.size() << " from queue, sending";
+      TLOG_DEBUG(TLVL_TRACE) << get_name() << ": Received vector of size " << vec.size() << " from queue, sending";
       m_output->send(&vec[0], vec.size() * sizeof(int), m_queue_timeout, m_topic);
 
       counter++;

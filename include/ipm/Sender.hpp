@@ -25,7 +25,7 @@
 
 #include "cetlib/BasicPluginFactory.h"
 #include "cetlib/compiler_macros.h"
-#include "ers/Issue.h"
+#include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
 
 #include <memory>
@@ -85,8 +85,7 @@ public:
             const duration_t& timeout,
             std::string const& metadata = "");
 
-  void send_multipart(const void** message_parts,
-                      const std::vector<message_size_t>& message_sizes,
+  void send_multipart(std::vector<std::pair<const void*, message_size_t>>& message_parts,
                       const duration_t& timeout,
                       std::string const& metadata = "");
 
@@ -98,13 +97,12 @@ public:
 
 protected:
   virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
-  virtual void send_multipart_(const void** message_parts,
-                               const std::vector<message_size_t>& message_sizes,
+  virtual void send_multipart_(std::vector<std::pair<const void*, message_size_t>>& message_parts,
                                const duration_t& timeout,
                                std::string const& metadata)
   {
-    for (size_t i = 0; i < message_sizes.size(); ++i) {
-      send_(message_parts[i], message_sizes[i], timeout, metadata);
+    for (auto message_part : message_parts) {
+      send_(message_part.first, message_part.second, timeout, metadata);
     }
   }
 };

@@ -11,9 +11,8 @@
 
 #include "ipm/vectorintipmreceiverdaqmodule/Nljs.hpp"
 
-#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/app/Nljs.hpp"
 
-//#include "TRACE/trace.h"
 #include "logging/Logging.hpp"
 
 #include <chrono>
@@ -44,10 +43,10 @@ VectorIntIPMSubscriberDAQModule::VectorIntIPMSubscriberDAQModule(const std::stri
 void
 VectorIntIPMSubscriberDAQModule::init(const data_t& init_data)
 {
-  auto ini = init_data.get<appfwk::cmd::ModInit>();
+  auto ini = init_data.get<appfwk::app::ModInit>();
   for (const auto& qi : ini.qinfos) {
     if (qi.name == "output") {
-      ers::info(ers::Message(ERS_HERE, "VIIRDM: output queue is " + qi.inst));
+      TLOG() << "VIIRDM: output queue is " << qi.inst;
       m_output_queue.reset(new appfwk::DAQSink<std::vector<int>>(qi.inst));
     }
   }
@@ -64,7 +63,7 @@ VectorIntIPMSubscriberDAQModule::do_configure(const data_t& config_data)
   m_input = make_ipm_subscriber(m_cfg.receiver_type);
 
   std::string topic = m_cfg.topic;
-  ers::info( ers::Message(ERS_HERE,"VIISubDM: topic is "+ topic));
+  TLOG() << "VIISubDM: topic is " << topic;
 
   m_input->subscribe(topic);
   m_input->connect_for_receives(m_cfg.connection_info);
@@ -96,15 +95,15 @@ VectorIntIPMSubscriberDAQModule::do_work(std::atomic<bool>& running_flag)
 
       try {
         auto recvd = m_input->receive(m_queue_timeout);
-        if (recvd.m_data.size() == 0) {
+        if (recvd.data.size() == 0) {
           TLOG_DEBUG(1) << "No data received, moving to next loop iteration";
           continue;
         }
 
-        assert(recvd.m_data.size() == m_num_ints_per_vector * sizeof(int));
-        memcpy(&output[0], &recvd.m_data[0], sizeof(int) * m_num_ints_per_vector);
+        assert(recvd.data.size() == m_num_ints_per_vector * sizeof(int));
+        memcpy(&output[0], &recvd.data[0], sizeof(int) * m_num_ints_per_vector);
 
-        oss << ": Received vector " << counter << " with size " << output.size() << " on topic " << recvd.m_metadata;
+        oss << ": Received vector " << counter << " with size " << output.size() << " on topic " << recvd.metadata;
         ers::info(SubscriberProgressUpdate(ERS_HERE, get_name(), oss.str()));
         oss.str("");
       } catch (ReceiveTimeoutExpired const& rte) {
