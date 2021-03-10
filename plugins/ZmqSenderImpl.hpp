@@ -55,7 +55,7 @@ protected:
       res = m_socket.send(topic_msg, ZMQ_SNDMORE);
 
       if (!res) {
-        TLOG() << "Unable to send message";
+        TLOG_DEBUG(2) << "Unable to send message";
         continue;
       }
 
