@@ -38,9 +38,14 @@ public:
   {
     std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
     TLOG() << "Connection String is " << connection_string;
-    m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-    m_socket.bind(connection_string);
-    m_socket_connected = true;
+    try {
+
+      m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
+      m_socket.bind(connection_string);
+      m_socket_connected = true;
+    } catch (zmq::error_t const& err) {
+      throw ZmqError(ERS_HERE, err.what());
+    }
   }
 
 protected:
@@ -52,7 +57,11 @@ protected:
     do {
 
       zmq::message_t topic_msg(topic.c_str(), topic.size());
-      res = m_socket.send(topic_msg, ZMQ_SNDMORE);
+      try {
+        res = m_socket.send(topic_msg, ZMQ_SNDMORE);
+      } catch (zmq::error_t const& err) {
+        throw ZmqError(ERS_HERE, err.what());
+      }
 
       if (!res) {
         TLOG_DEBUG(2) << "Unable to send message";
@@ -60,7 +69,11 @@ protected:
       }
 
       zmq::message_t msg(message, N);
-      res = m_socket.send(msg);
+      try {
+        res = m_socket.send(msg);
+      } catch (zmq::error_t const& err) {
+        throw ZmqError(ERS_HERE, err.what());
+      }
     } while (std::chrono::steady_clock::now() - start_time < timeout && !res);
 
     if (!res) {

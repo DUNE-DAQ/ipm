@@ -11,8 +11,23 @@
  */
 
 #include "zmq.hpp"
+#include "ers/Issue.hpp"
 
-namespace dunedaq::ipm {
+namespace dunedaq {
+
+/**
+ * @brief An ERS Error indicating that an exception was thrown from ZMQ
+ * @param what The zmq::error_t exception message
+ * @cond Doxygen doesn't like ERS macros
+ */
+ERS_DECLARE_ISSUE(ipm,
+                  ZmqError,
+                  "A zmq::error_t exception was thrown! what(): "
+                                                     << what,
+                  ((const char*)what)) // NOLINT
+/// @endcond
+
+namespace ipm {
 class ZmqContext
 {
 public:
@@ -34,6 +49,7 @@ private:
   ZmqContext& operator=(ZmqContext const&) = delete;
   ZmqContext& operator=(ZmqContext&&) = delete;
 };
-} // namespace dunedaq::ipm
+} // namespace ipm
+} // namespace dundaq
 
 #endif // IPM_INCLUDE_IPM_ZMQCONTEXT_HPP_

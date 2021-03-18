@@ -40,15 +40,30 @@ public:
   {
     std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
     TLOG() << "Connection String is " << connection_string;
-    m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-    m_socket.connect(connection_string);
-    m_socket_connected = true;
+    try {
+      m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
+      m_socket.connect(connection_string);
+      m_socket_connected = true;
+    } catch (zmq::error_t const& err) {
+      throw ZmqError(ERS_HERE, err.what());
+    }
   }
 
-  void subscribe(std::string const& topic) override { m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size()); }
+  void subscribe(std::string const& topic) override
+  {
+    try {
+      m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size());
+    } catch (zmq::error_t const& err) {
+      throw ZmqError(ERS_HERE, err.what());
+    }
+  }
   void unsubscribe(std::string const& topic) override
   {
-    m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
+    try {
+      m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
+    } catch (zmq::error_t const& err) {
+      throw ZmqError(ERS_HERE, err.what());
+    }
   }
 
 protected:
@@ -66,7 +81,7 @@ protected:
         res = m_socket.recv(&hdr);
         TLOG_DEBUG(3) << "Recv res=" << res << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
-        // Throw ERS-ified exception
+        throw ZmqError(ERS_HERE, err.what());
       }
       if (res > 0 || hdr.more()) {
         TLOG_DEBUG(3) << "Going to receive data";
@@ -88,7 +103,7 @@ protected:
     }
 
     TLOG_DEBUG(2) << "Returning output with metadata size " << output.metadata.size() << " and data size "
-                         << output.data.size();
+                  << output.data.size();
     return output;
   }
 

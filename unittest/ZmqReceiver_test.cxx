@@ -7,6 +7,7 @@
  */
 
 #include "ipm/Receiver.hpp"
+#include "ipm/ZmqContext.hpp"
 
 #define BOOST_TEST_MODULE ZmqReceiver_test // NOLINT
 
@@ -24,6 +25,18 @@ BOOST_AUTO_TEST_CASE(BasicTests)
   auto the_receiver = make_ipm_receiver("ZmqReceiver");
   BOOST_REQUIRE(the_receiver != nullptr);
   BOOST_REQUIRE(!the_receiver->can_receive());
+}
+
+BOOST_AUTO_TEST_CASE(Exceptions)
+{
+  auto the_receiver = make_ipm_receiver("ZmqReceiver");
+  BOOST_REQUIRE(the_receiver != nullptr);
+
+  nlohmann::json config_json;
+  config_json["connection_string"] = "invalid_connection_string";
+  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config_json),
+                          ZmqError,
+                          [&](ZmqError const&) { return true; });
 }
 
 BOOST_AUTO_TEST_SUITE_END()
