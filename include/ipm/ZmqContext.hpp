@@ -10,8 +10,8 @@
  * received with this code.
  */
 
-#include "zmq.hpp"
 #include "ers/Issue.hpp"
+#include "zmq.hpp"
 
 namespace dunedaq {
 
@@ -20,10 +20,7 @@ namespace dunedaq {
  * @param what The zmq::error_t exception message
  * @cond Doxygen doesn't like ERS macros
  */
-ERS_DECLARE_ISSUE(ipm,
-                  ZmqError,
-                  "A zmq::error_t exception was thrown! what(): "
-                                                     << what,
+ERS_DECLARE_ISSUE(ipm, ZmqError, "A zmq::error_t exception was thrown! what(): " << what,
                   ((const char*)what)) // NOLINT
 /// @endcond
 
