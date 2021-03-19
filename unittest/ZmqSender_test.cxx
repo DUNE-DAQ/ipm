@@ -35,6 +35,6 @@ BOOST_AUTO_TEST_CASE(Exceptions)
   nlohmann::json config_json;
   config_json["connection_string"] = "invalid_connection_string";
   BOOST_REQUIRE_EXCEPTION(
-    the_sender->connect_for_sends(config_json), ZmqError, [&](ZmqError const&) { return true; });
+    the_sender->connect_for_sends(config_json), ZmqSenderBindError, [&](ZmqSenderBindError const&) { return true; });
 }
 BOOST_AUTO_TEST_SUITE_END()

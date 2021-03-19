@@ -44,7 +44,7 @@ public:
       m_socket.bind(connection_string);
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
-      throw ZmqError(ERS_HERE, err.what());
+      throw ZmqSenderBindError(ERS_HERE, err.what(), connection_string);
     }
   }
 
@@ -60,7 +60,7 @@ protected:
       try {
         res = m_socket.send(topic_msg, ZMQ_SNDMORE);
       } catch (zmq::error_t const& err) {
-        throw ZmqError(ERS_HERE, err.what());
+        throw ZmqSendError(ERS_HERE, err.what(), topic.size(), topic);
       }
 
       if (!res) {
@@ -72,7 +72,7 @@ protected:
       try {
         res = m_socket.send(msg);
       } catch (zmq::error_t const& err) {
-        throw ZmqError(ERS_HERE, err.what());
+        throw ZmqSendError(ERS_HERE, err.what(), N, topic);
       }
     } while (std::chrono::steady_clock::now() - start_time < timeout && !res);
 

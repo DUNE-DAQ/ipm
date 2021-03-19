@@ -45,7 +45,7 @@ public:
       m_socket.connect(connection_string);
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
-      throw ZmqError(ERS_HERE, err.what());
+      throw ZmqReceiverConnectError(ERS_HERE, err.what(), connection_string);
     }
   }
 
@@ -54,7 +54,7 @@ public:
     try {
       m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size());
     } catch (zmq::error_t const& err) {
-      throw ZmqError(ERS_HERE, err.what());
+      throw ZmqSubscribeError(ERS_HERE, err.what(), topic);
     }
   }
   void unsubscribe(std::string const& topic) override
@@ -62,7 +62,7 @@ public:
     try {
       m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
     } catch (zmq::error_t const& err) {
-      throw ZmqError(ERS_HERE, err.what());
+      throw ZmqUnsubscribeError(ERS_HERE, err.what(), topic);
     }
   }
 
@@ -81,7 +81,7 @@ protected:
         res = m_socket.recv(&hdr);
         TLOG_DEBUG(3) << "Recv res=" << res << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
-        throw ZmqError(ERS_HERE, err.what());
+        throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
       if (res > 0 || hdr.more()) {
         TLOG_DEBUG(3) << "Going to receive data";
@@ -89,7 +89,11 @@ protected:
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
         // ZMQ guarantees that the entire message has arrived
-        res = m_socket.recv(&msg);
+        try {
+          res = m_socket.recv(&msg);
+        } catch (zmq::error_t const& err) {
+          throw ZmqReceiveError(ERS_HERE, err.what(), "data");
+        }
         TLOG_DEBUG(3) << "Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
