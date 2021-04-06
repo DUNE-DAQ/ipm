@@ -31,19 +31,3 @@ dunedaq::ipm::Sender::send(const void* message,
 
   send_(message, message_size, timeout, metadata);
 }
-
-void
-dunedaq::ipm::Sender::send_multipart(std::vector<std::pair<const void*, message_size_t>>& message_parts,
-                                     const duration_t& timeout,
-                                     std::string const& metadata)
-{
-  if (message_parts.empty()) {
-    return;
-  }
-
-  if (!can_send()) {
-    throw KnownStateForbidsSend(ERS_HERE);
-  }
-
-  send_multipart_(message_parts, timeout, metadata);
-}
