@@ -36,17 +36,17 @@ public:
   bool can_send() const noexcept override { return m_socket_connected; }
   void connect_for_sends(const nlohmann::json& connection_info)
   {
-    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << connection_string;
+    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    TLOG() << "Connection String is " << m_connection_string;
     m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-    m_socket.bind(connection_string);
+    m_socket.bind(m_connection_string);
     m_socket_connected = true;
   }
 
 protected:
   void send_(const void* message, int N, const duration_t& timeout, std::string const& topic) override
   {
-    TLOG_DEBUG(0) << "Starting send of " << N << " bytes";
+    TLOG_DEBUG(0) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     bool res = false;
     do {
@@ -55,7 +55,7 @@ protected:
       res = m_socket.send(topic_msg, ZMQ_SNDMORE);
 
       if (!res) {
-        TLOG_DEBUG(2) << "Unable to send message";
+        TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Unable to send message";
         continue;
       }
 
@@ -67,11 +67,12 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(0) << "Completed send of " << N << " bytes";
+    TLOG_DEBUG(0) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
   }
 
 private:
   zmq::socket_t m_socket;
+  std::string m_connection_string;
   bool m_socket_connected;
 };
 
