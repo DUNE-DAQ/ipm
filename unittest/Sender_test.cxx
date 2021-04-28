@@ -91,40 +91,4 @@ BOOST_AUTO_TEST_CASE(BadInput)
   BOOST_REQUIRE_NO_THROW(the_sender.send(random_data.data(), 0, Sender::s_no_block));
 }
 
-BOOST_AUTO_TEST_CASE(StatusChecks_Multipart)
-{
-  SenderImpl the_sender;
-  std::vector<std::pair<const void*, Sender::message_size_t>> random_data{
-    { "T", 1 }, { "Ee", 2 }, { "S", 1 }, { "Tt", 2 }
-  };
-
-  BOOST_REQUIRE(!the_sender.can_send());
-
-  the_sender.make_me_ready_to_send();
-  BOOST_REQUIRE(the_sender.can_send());
-
-  BOOST_REQUIRE_NO_THROW(the_sender.send_multipart(random_data, Sender::s_no_block));
-
-  the_sender.sabotage_my_sending_ability();
-  BOOST_REQUIRE(!the_sender.can_send());
-
-  BOOST_REQUIRE_EXCEPTION(the_sender.send_multipart(random_data, Sender::s_no_block),
-                          dunedaq::ipm::KnownStateForbidsSend,
-                          [&](dunedaq::ipm::KnownStateForbidsSend) { return true; });
-}
-
-BOOST_AUTO_TEST_CASE(BadInput_Multipart)
-{
-  SenderImpl the_sender;
-  the_sender.make_me_ready_to_send();
-
-  std::vector<std::pair<const void*, Sender::message_size_t>> bad_data{ { nullptr, 10 } };
-  BOOST_REQUIRE_EXCEPTION(the_sender.send_multipart(bad_data, Sender::s_no_block),
-                          dunedaq::ipm::NullPointerPassedToSend,
-                          [&](dunedaq::ipm::NullPointerPassedToSend) { return true; });
-
-  std::vector<std::pair<const void*, Sender::message_size_t>> random_data{  };
-  BOOST_REQUIRE_NO_THROW(the_sender.send_multipart(random_data, Sender::s_no_block));
-}
-
 BOOST_AUTO_TEST_SUITE_END()

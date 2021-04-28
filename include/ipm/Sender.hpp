@@ -85,10 +85,6 @@ public:
             const duration_t& timeout,
             std::string const& metadata = "");
 
-  void send_multipart(std::vector<std::pair<const void*, message_size_t>>& message_parts,
-                      const duration_t& timeout,
-                      std::string const& metadata = "");
-
   Sender(const Sender&) = delete;
   Sender& operator=(const Sender&) = delete;
 
@@ -97,14 +93,6 @@ public:
 
 protected:
   virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
-  virtual void send_multipart_(std::vector<std::pair<const void*, message_size_t>>& message_parts,
-                               const duration_t& timeout,
-                               std::string const& metadata)
-  {
-    for (auto message_part : message_parts) {
-      send_(message_part.first, message_part.second, timeout, metadata);
-    }
-  }
 };
 
 inline std::shared_ptr<Sender>
