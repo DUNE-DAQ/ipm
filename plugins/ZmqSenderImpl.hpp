@@ -46,7 +46,7 @@ public:
 protected:
   void send_(const void* message, int N, const duration_t& timeout, std::string const& topic) override
   {
-    TLOG_DEBUG(0) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
+    TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     bool res = false;
     do {
@@ -67,7 +67,7 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(0) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
+    TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
   }
 
 private:
