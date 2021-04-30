@@ -51,7 +51,7 @@ public:
 protected:
   void send_(const void* message, int N, const duration_t& timeout, std::string const& topic) override
   {
-    TLOG_DEBUG(0) << "Starting send of " << N << " bytes";
+    TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     bool res = false;
     do {
@@ -64,7 +64,7 @@ protected:
       }
 
       if (!res) {
-        TLOG_DEBUG(2) << "Unable to send message";
+        TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Unable to send message";
         continue;
       }
 
@@ -80,11 +80,12 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(0) << "Completed send of " << N << " bytes";
+    TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
   }
 
 private:
   zmq::socket_t m_socket;
+  std::string m_connection_string;
   bool m_socket_connected;
 };
 
