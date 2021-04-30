@@ -7,6 +7,7 @@
  */
 
 #include "ipm/Sender.hpp"
+#include "ipm/ZmqContext.hpp"
 
 #define BOOST_TEST_MODULE ZmqSender_test // NOLINT
 
@@ -26,4 +27,14 @@ BOOST_AUTO_TEST_CASE(BasicTests)
   BOOST_REQUIRE(!the_sender->can_send());
 }
 
+BOOST_AUTO_TEST_CASE(Exceptions)
+{
+  auto the_sender = make_ipm_sender("ZmqSender");
+  BOOST_REQUIRE(the_sender != nullptr);
+
+  nlohmann::json config_json;
+  config_json["connection_string"] = "invalid_connection_string";
+  BOOST_REQUIRE_EXCEPTION(
+    the_sender->connect_for_sends(config_json), ZmqSenderBindError, [&](ZmqSenderBindError const&) { return true; });
+}
 BOOST_AUTO_TEST_SUITE_END()

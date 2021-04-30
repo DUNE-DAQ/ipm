@@ -36,11 +36,16 @@ public:
   bool can_send() const noexcept override { return m_socket_connected; }
   void connect_for_sends(const nlohmann::json& connection_info)
   {
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << m_connection_string;
-    m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-    m_socket.bind(m_connection_string);
-    m_socket_connected = true;
+    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    TLOG() << "Connection String is " << connection_string;
+    try {
+
+      m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
+      m_socket.bind(connection_string);
+      m_socket_connected = true;
+    } catch (zmq::error_t const& err) {
+      throw ZmqSenderBindError(ERS_HERE, err.what(), connection_string);
+    }
   }
 
 protected:
@@ -52,7 +57,11 @@ protected:
     do {
 
       zmq::message_t topic_msg(topic.c_str(), topic.size());
-      res = m_socket.send(topic_msg, ZMQ_SNDMORE);
+      try {
+        res = m_socket.send(topic_msg, ZMQ_SNDMORE);
+      } catch (zmq::error_t const& err) {
+        throw ZmqSendError(ERS_HERE, err.what(), topic.size(), topic);
+      }
 
       if (!res) {
         TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Unable to send message";
@@ -60,7 +69,11 @@ protected:
       }
 
       zmq::message_t msg(message, N);
-      res = m_socket.send(msg);
+      try {
+        res = m_socket.send(msg);
+      } catch (zmq::error_t const& err) {
+        throw ZmqSendError(ERS_HERE, err.what(), N, topic);
+      }
     } while (std::chrono::steady_clock::now() - start_time < timeout && !res);
 
     if (!res) {
