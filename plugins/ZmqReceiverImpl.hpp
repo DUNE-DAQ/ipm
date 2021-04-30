@@ -38,14 +38,14 @@ public:
   bool can_receive() const noexcept override { return m_socket_connected; }
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << connection_string;
+    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    TLOG() << "Connection String is " << m_connection_string;
     try {
       m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-      m_socket.connect(connection_string);
+      m_socket.connect(m_connection_string);
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
-      throw ZmqReceiverConnectError(ERS_HERE, err.what(), connection_string);
+      throw ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string);
     }
   }
 
