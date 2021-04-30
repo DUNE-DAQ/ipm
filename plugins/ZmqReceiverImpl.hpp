@@ -38,10 +38,10 @@ public:
   bool can_receive() const noexcept override { return m_socket_connected; }
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << connection_string;
+    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    TLOG() << "Connection String is " << m_connection_string;
     m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-    m_socket.connect(connection_string);
+    m_socket.connect(m_connection_string);
     m_socket_connected = true;
   }
 
@@ -62,20 +62,22 @@ protected:
     do {
 
       try {
-        TLOG_DEBUG(3) << "Going to receive header";
+        TLOG_DEBUG(3) << "Endpoint " << m_connection_string << ": Going to receive header";
         res = m_socket.recv(&hdr);
-        TLOG_DEBUG(3) << "Recv res=" << res << " for header (hdr.size() == " << hdr.size() << ")";
+        TLOG_DEBUG(3) << "Endpoint " << m_connection_string << ": Recv res=" << res
+                      << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         // Throw ERS-ified exception
       }
       if (res > 0 || hdr.more()) {
-        TLOG_DEBUG(3) << "Going to receive data";
+        TLOG_DEBUG(3) << "Endpoint " << m_connection_string << ": Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
         // ZMQ guarantees that the entire message has arrived
         res = m_socket.recv(&msg);
-        TLOG_DEBUG(3) << "Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
+        TLOG_DEBUG(3) << "Endpoint " << m_connection_string << ": Recv res=" << res
+                      << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else {
@@ -87,13 +89,15 @@ protected:
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(2) << "Returning output with metadata size " << output.metadata.size() << " and data size "
+    TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Returning output with metadata size "
+                  << output.metadata.size() << " and data size "
                          << output.data.size();
     return output;
   }
 
 private:
   zmq::socket_t m_socket;
+  std::string m_connection_string;
   bool m_socket_connected{ false };
 };
 
