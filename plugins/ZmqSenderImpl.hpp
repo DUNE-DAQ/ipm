@@ -40,6 +40,7 @@ public:
     if (m_connection_string!="") {
       m_socket.unbind(m_connection_string);
     }
+    m_socket.close();
   }
 
   bool can_send() const noexcept override { return m_socket_connected; }

@@ -42,6 +42,7 @@ public:
     if (m_connection_string!="") {
       m_socket.disconnect(m_connection_string);
     }
+    m_socket.close();
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
