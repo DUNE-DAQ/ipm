@@ -75,6 +75,8 @@ public:
 
   Receiver() = default;
 
+  virtual ~Receiver() = default;
+
   virtual void connect_for_receives(const nlohmann::json& connection_info) = 0;
 
   virtual bool can_receive() const noexcept = 0;
