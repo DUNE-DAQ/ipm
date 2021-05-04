@@ -35,6 +35,15 @@ public:
     : m_socket(ZmqContext::instance().GetContext(),
                type == ReceiverType::Pull ? zmq::socket_type::pull : zmq::socket_type::sub)
   {}
+
+  ~ZmqReceiverImpl()
+  {
+    // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
+    if (m_connection_string!="") {
+      m_socket.disconnect(m_connection_string);
+    }
+  }
+
   bool can_receive() const noexcept override { return m_socket_connected; }
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
