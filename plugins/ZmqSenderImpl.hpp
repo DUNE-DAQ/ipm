@@ -33,6 +33,16 @@ public:
     : m_socket(ZmqContext::instance().GetContext(),
                type == SenderType::Push ? zmq::socket_type::push : zmq::socket_type::pub)
   {}
+
+  ~ZmqSenderImpl()
+  {
+    // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
+    if (m_connection_string!="") {
+      m_socket.unbind(m_connection_string);
+    }
+    m_socket.close();
+  }
+
   bool can_send() const noexcept override { return m_socket_connected; }
   void connect_for_sends(const nlohmann::json& connection_info)
   {
