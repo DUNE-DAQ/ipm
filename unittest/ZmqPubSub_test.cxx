@@ -6,8 +6,8 @@
  * received with this code.
  */
 
-#include "ipm/Subscriber.hpp"
 #include "ipm/Sender.hpp"
+#include "ipm/Subscriber.hpp"
 
 #define BOOST_TEST_MODULE ZmqPubSub_test // NOLINT
 

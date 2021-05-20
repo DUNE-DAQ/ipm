@@ -41,7 +41,7 @@ VectorIntIPMSenderDAQModule::init(const data_t& init_data)
   auto ini = init_data.get<appfwk::app::ModInit>();
   for (const auto& qi : ini.qinfos) {
     if (qi.name == "input") {
-      TLOG() <<"VIISDM: input queue is " << qi.inst;
+      TLOG() << "VIISDM: input queue is " << qi.inst;
       m_input_queue.reset(new appfwk::DAQSource<std::vector<int>>(qi.inst));
     }
   }
