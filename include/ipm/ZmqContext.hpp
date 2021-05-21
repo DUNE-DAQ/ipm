@@ -51,7 +51,7 @@ ERS_DECLARE_ISSUE(ipm,
                   ZmqSendError,
                   "An exception occurred while sending " << N << " bytes to " << topic << ": " << what,
                   ((const char*)what)((int)N)((std::string)topic)) // NOLINT
-                                       /// @endcond
+                                                                   /// @endcond
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while receiving
@@ -61,9 +61,9 @@ ERS_DECLARE_ISSUE(ipm,
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqReceiveError,
-                  "An exception occured while receiving " << which <<": " << what,
+                  "An exception occured while receiving " << which << ": " << what,
                   ((const char*)what)((const char*)which)) // NOLINT
-                                       /// @endcond
+                                                           /// @endcond
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ during a subscribe
@@ -112,6 +112,6 @@ private:
   ZmqContext& operator=(ZmqContext&&) = delete;
 };
 } // namespace ipm
-} // namespace dundaq
+} // namespace dunedaq
 
 #endif // IPM_INCLUDE_IPM_ZMQCONTEXT_HPP_

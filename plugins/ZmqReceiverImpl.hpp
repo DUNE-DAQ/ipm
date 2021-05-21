@@ -39,7 +39,7 @@ public:
   ~ZmqReceiverImpl()
   {
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
-    if (m_connection_string!="") {
+    if (m_connection_string != "") {
       m_socket.disconnect(m_connection_string);
     }
     m_socket.close();
@@ -120,8 +120,7 @@ protected:
     }
 
     TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Returning output with metadata size "
-                  << output.metadata.size() << " and data size "
-                         << output.data.size();
+                  << output.metadata.size() << " and data size " << output.data.size();
     return output;
   }
 
