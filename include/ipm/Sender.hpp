@@ -53,7 +53,7 @@ ERS_DECLARE_ISSUE(ipm,
  * @brief Declare the function that will be called by the plugin loader
  * @param klass Class to be defined as a DUNE IPM Sender
  */
- // NOLINTNEXTLINE(build/define_used)
+// NOLINTNEXTLINE(build/define_used)
 #define DEFINE_DUNE_IPM_SENDER(klass)                                                                                  \
   EXTERN_C_FUNC_DECLARE_START                                                                                          \
   std::shared_ptr<dunedaq::ipm::Sender> make() { return std::shared_ptr<dunedaq::ipm::Sender>(new klass()); }          \
