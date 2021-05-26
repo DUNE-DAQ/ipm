@@ -43,7 +43,7 @@ public:
         m_socket.unbind(m_connection_string);
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
-        throw ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string);
+        ers::error(ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string));
       }
     }
     m_socket.close();

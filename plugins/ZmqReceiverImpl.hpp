@@ -44,7 +44,7 @@ public:
         m_socket.disconnect(m_connection_string);
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
-        throw ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string);
+        ers::error(ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string));
       }
     }
     m_socket.close();
