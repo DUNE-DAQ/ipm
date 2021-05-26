@@ -37,8 +37,14 @@ public:
   ~ZmqSenderImpl()
   {
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
-    if (m_connection_string != "") {
-      m_socket.unbind(m_connection_string);
+    if (m_connection_string != "" && m_socket_connected) {
+      try {
+
+        m_socket.unbind(m_connection_string);
+        m_socket_connected = false;
+      } catch (zmq::error_t const& err) {
+        throw ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string);
+      }
     }
     m_socket.close();
   }
