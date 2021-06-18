@@ -34,6 +34,7 @@ public:
   explicit ZmqReceiverImpl(ReceiverType type)
     : m_socket(ZmqContext::instance().GetContext(),
                type == ReceiverType::Pull ? zmq::socket_type::pull : zmq::socket_type::sub)
+    , m_receiver_type(type)
   {}
 
   ~ZmqReceiverImpl()
@@ -66,18 +67,22 @@ public:
 
   void subscribe(std::string const& topic) override
   {
-    try {
-      m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size());
-    } catch (zmq::error_t const& err) {
-      throw ZmqSubscribeError(ERS_HERE, err.what(), topic);
+    if (m_receiver_type == ReceiverType::Subscriber) {
+      try {
+        m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size());
+      } catch (zmq::error_t const& err) {
+        throw ZmqSubscribeError(ERS_HERE, err.what(), topic);
+      }
     }
   }
   void unsubscribe(std::string const& topic) override
   {
-    try {
-      m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
-    } catch (zmq::error_t const& err) {
-      throw ZmqUnsubscribeError(ERS_HERE, err.what(), topic);
+    if (m_receiver_type == ReceiverType::Subscriber) {
+      try {
+        m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
+      } catch (zmq::error_t const& err) {
+        throw ZmqUnsubscribeError(ERS_HERE, err.what(), topic);
+      }
     }
   }
 
@@ -95,7 +100,7 @@ protected:
         TLOG_DEBUG(11) << "Endpoint " << m_connection_string << ": Going to receive header";
         res = m_socket.recv(&hdr);
         TLOG_DEBUG(21) << "Endpoint " << m_connection_string << ": Recv res=" << res
-                      << " for header (hdr.size() == " << hdr.size() << ")";
+                       << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
@@ -112,7 +117,7 @@ protected:
           throw ZmqReceiveError(ERS_HERE, err.what(), "data");
         }
         TLOG_DEBUG(21) << "Endpoint " << m_connection_string << ": Recv res=" << res
-                      << " for data (msg.size() == " << msg.size() << ")";
+                       << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else {
@@ -133,6 +138,7 @@ private:
   zmq::socket_t m_socket;
   std::string m_connection_string;
   bool m_socket_connected{ false };
+  ReceiverType m_receiver_type;
 };
 
 } // namespace ipm
