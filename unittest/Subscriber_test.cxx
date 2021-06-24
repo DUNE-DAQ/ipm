@@ -33,9 +33,8 @@ public:
     , m_subscriptions()
   {}
 
-  void connect_for_receives(const nlohmann::json& /* connection_info */) {}
+  void connect_for_receives(const nlohmann::json& /* connection_info */) { m_can_receive = true; }
   bool can_receive() const noexcept override { return m_can_receive; }
-  void make_me_ready_to_receive() { m_can_receive = true; }
   void sabotage_my_receiving_ability() { m_can_receive = false; }
 
   void subscribe(std::string const& topic) override { m_subscriptions.insert(topic); }
@@ -74,7 +73,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_subscriber.can_receive());
 
-  the_subscriber.make_me_ready_to_receive();
+  nlohmann::json j;
+  the_subscriber.connect_for_receives(j);
   BOOST_REQUIRE(the_subscriber.can_receive());
 
   the_subscriber.subscribe("TEST");

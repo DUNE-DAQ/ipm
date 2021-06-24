@@ -31,9 +31,8 @@ public:
     : m_can_receive(false)
   {}
 
-  void connect_for_receives(const nlohmann::json& /* connection_info */) {}
+  void connect_for_receives(const nlohmann::json& /* connection_info */) { m_can_receive = true; }
   bool can_receive() const noexcept override { return m_can_receive; }
-  void make_me_ready_to_receive() { m_can_receive = true; }
   void sabotage_my_receiving_ability() { m_can_receive = false; }
 
 protected:
@@ -65,7 +64,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_receiver.can_receive());
 
-  the_receiver.make_me_ready_to_receive();
+  nlohmann::json j;
+  the_receiver.connect_for_receives(j);
   BOOST_REQUIRE(the_receiver.can_receive());
 
   BOOST_REQUIRE_NO_THROW(the_receiver.receive(Receiver::s_no_block));
