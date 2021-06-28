@@ -7,6 +7,7 @@
  */
 
 #include "ipm/Receiver.hpp"
+#include "ipm/Subscriber.hpp"
 #include "ipm/ZmqContext.hpp"
 
 #define BOOST_TEST_MODULE ZmqReceiver_test // NOLINT
@@ -25,6 +26,15 @@ BOOST_AUTO_TEST_CASE(BasicTests)
   auto the_receiver = make_ipm_receiver("ZmqReceiver");
   BOOST_REQUIRE(the_receiver != nullptr);
   BOOST_REQUIRE(!the_receiver->can_receive());
+}
+
+BOOST_AUTO_TEST_CASE(Subscribe) {
+
+  auto the_receiver = make_ipm_subscriber("ZmqReceiver");
+  BOOST_REQUIRE(the_receiver != nullptr);
+  BOOST_REQUIRE(!the_receiver->can_receive());
+  the_receiver->subscribe("foo"); // Should not throw
+  the_receiver->unsubscribe("foo"); // Should not throw
 }
 
 BOOST_AUTO_TEST_CASE(Exceptions)
