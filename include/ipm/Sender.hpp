@@ -74,6 +74,7 @@ public:
   using message_size_t = int;
 
   Sender() = default;
+  virtual ~Sender() = default;
 
   virtual void connect_for_sends(const nlohmann::json& connection_info) = 0;
 

@@ -78,6 +78,7 @@ public:
     0; // Since "I want 0 bytes" is pointless, "0" denotes "I don't care about the size"
 
   Receiver() = default;
+  virtual ~Receiver() = default;
 
   virtual void connect_for_receives(const nlohmann::json& connection_info) = 0;
 
