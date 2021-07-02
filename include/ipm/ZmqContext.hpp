@@ -19,75 +19,75 @@ namespace dunedaq {
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while connecting the receiver
  * @param what The zmq::error_t exception message
  * @param connection_string The connection string that caused the error
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqReceiverConnectError,
                   "An exception occured while connecting the receiver: " << what << " (connection_string: "
                                                                          << connection_string << ")",
                   ((const char*)what)((std::string)connection_string)) // NOLINT
-                                                                       /// @endcond
+                                                                       /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while binding the sender
  * @param what The zmq::error_t exception message
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqSenderBindError,
                   "An exception occured while binding the sender: " << what << " (connection_string: "
                                                                     << connection_string << ")",
                   ((const char*)what)((std::string)connection_string)) // NOLINT
-                                                                       /// @endcond
+                                                                       /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while sending
  * @param what The zmq::error_t exception message
  * @param N number of bytes in attempted send
  * @param topic Send topic
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqSendError,
                   "An exception occurred while sending " << N << " bytes to " << topic << ": " << what,
                   ((const char*)what)((int)N)((std::string)topic)) // NOLINT
-                                                                   /// @endcond
+                                                                   /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while receiving
  * @param what The zmq::error_t exception message
  * @param which Which receive had an issue
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqReceiveError,
                   "An exception occured while receiving " << which << ": " << what,
                   ((const char*)what)((const char*)which)) // NOLINT
-                                                           /// @endcond
+                                                           /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ during a subscribe
  * @param what The zmq::error_t exception message
  * @param topic Topic being subscribed to
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqSubscribeError,
                   "An execption occured while subscribing to " << topic << ": " << what,
                   ((const char*)what)((std::string)topic)) // NOLINT
-/// @endcond
+/// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ during an unsubscribe
  * @param what The zmq::error_t exception message
  * @param topic Topic being unsubscribed from
- * @cond Doxygen doesn't like ERS macros
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqUnsubscribeError,
                   "An execption occured while unsubscribing from " << topic << ": " << what,
                   ((const char*)what)((std::string)topic)) // NOLINT
-/// @endcond
+/// @endcond LCOV_EXCL_STOP
 
 namespace ipm {
 class ZmqContext

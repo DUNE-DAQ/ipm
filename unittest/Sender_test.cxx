@@ -29,9 +29,8 @@ public:
     : m_can_send(false)
   {}
 
-  void connect_for_sends(const nlohmann::json& /* connection_info */) {}
+  void connect_for_sends(const nlohmann::json& /* connection_info */) { m_can_send = true; }
   bool can_send() const noexcept override { return m_can_send; }
-  void make_me_ready_to_send() { m_can_send = true; }
   void sabotage_my_sending_ability() { m_can_send = false; }
 
 protected:
@@ -64,7 +63,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_sender.can_send());
 
-  the_sender.make_me_ready_to_send();
+  nlohmann::json j;
+  the_sender.connect_for_sends(j);
   BOOST_REQUIRE(the_sender.can_send());
 
   BOOST_REQUIRE_NO_THROW(the_sender.send(random_data.data(), random_data.size(), Sender::s_no_block));
@@ -80,7 +80,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 BOOST_AUTO_TEST_CASE(BadInput)
 {
   SenderImpl the_sender;
-  the_sender.make_me_ready_to_send();
+  nlohmann::json j;
+  the_sender.connect_for_sends(j);
 
   const char* bad_bytes = nullptr;
   BOOST_REQUIRE_EXCEPTION(the_sender.send(bad_bytes, 10, Sender::s_no_block),

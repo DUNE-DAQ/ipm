@@ -33,6 +33,7 @@
 #include <vector>
 
 namespace dunedaq {
+// Disable coverage collection LCOV_EXCL_START
 ERS_DECLARE_ISSUE(ipm, KnownStateForbidsReceive, "Receiver not in a state to receive data", )
 ERS_DECLARE_ISSUE(ipm,
                   UnexpectedNumberOfBytes,
@@ -42,6 +43,7 @@ ERS_DECLARE_ISSUE(ipm,
                   ReceiveTimeoutExpired,
                   "Unable to receive within timeout period (timeout period was " << timeout << " milliseconds)",
                   ((int)timeout)) // NOLINT
+// Reenable coverage collection LCOV_EXCL_STOP
 } // namespace dunedaq
 
 #ifndef EXTERN_C_FUNC_DECLARE_START
@@ -76,7 +78,6 @@ public:
     0; // Since "I want 0 bytes" is pointless, "0" denotes "I don't care about the size"
 
   Receiver() = default;
-
   virtual ~Receiver() = default;
 
   virtual void connect_for_receives(const nlohmann::json& connection_info) = 0;

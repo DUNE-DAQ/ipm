@@ -33,6 +33,7 @@
 #include <vector>
 
 namespace dunedaq {
+    // Disable coverage collection LCOV_EXCL_START
 ERS_DECLARE_ISSUE(ipm, KnownStateForbidsSend, "Sender not in a state to send data", )
 ERS_DECLARE_ISSUE(ipm, NullPointerPassedToSend, "An null pointer to memory was passed to Sender::send", )
 ERS_DECLARE_ISSUE(ipm,
@@ -40,6 +41,7 @@ ERS_DECLARE_ISSUE(ipm,
                   "Unable to send within timeout period (timeout period was " << timeout << " milliseconds)",
                   ((int)timeout)) // NOLINT
 
+// Reenable coverage collection LCOV_EXCL_STOP
 } // namespace dunedaq
 
 #ifndef EXTERN_C_FUNC_DECLARE_START
@@ -72,7 +74,6 @@ public:
   using message_size_t = int;
 
   Sender() = default;
-
   virtual ~Sender() = default;
 
   virtual void connect_for_sends(const nlohmann::json& connection_info) = 0;
