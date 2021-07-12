@@ -28,12 +28,13 @@ BOOST_AUTO_TEST_CASE(BasicTests)
   BOOST_REQUIRE(!the_receiver->can_receive());
 }
 
-BOOST_AUTO_TEST_CASE(Subscribe) {
+BOOST_AUTO_TEST_CASE(Subscribe)
+{
 
   auto the_receiver = make_ipm_subscriber("ZmqReceiver");
   BOOST_REQUIRE(the_receiver != nullptr);
   BOOST_REQUIRE(!the_receiver->can_receive());
-  the_receiver->subscribe("foo"); // Should not throw
+  the_receiver->subscribe("foo");   // Should not throw
   the_receiver->unsubscribe("foo"); // Should not throw
 }
 
