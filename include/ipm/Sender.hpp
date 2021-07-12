@@ -33,7 +33,7 @@
 #include <vector>
 
 namespace dunedaq {
-    // Disable coverage collection LCOV_EXCL_START
+// Disable coverage collection LCOV_EXCL_START
 ERS_DECLARE_ISSUE(ipm, KnownStateForbidsSend, "Sender not in a state to send data", )
 ERS_DECLARE_ISSUE(ipm, NullPointerPassedToSend, "An null pointer to memory was passed to Sender::send", )
 ERS_DECLARE_ISSUE(ipm,
