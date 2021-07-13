@@ -70,8 +70,8 @@ class Receiver
 
 public:
   using duration_t = std::chrono::milliseconds;
-  static constexpr duration_t s_block = std::chrono::duration_values<duration_t>::max();
-  static constexpr duration_t s_no_block = std::chrono::duration_values<duration_t>::zero();
+  static constexpr duration_t s_block = duration_t::max();
+  static constexpr duration_t s_no_block = duration_t::zero();
 
   using message_size_t = int;
   static constexpr message_size_t s_any_size =

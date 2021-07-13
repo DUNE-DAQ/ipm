@@ -123,7 +123,7 @@ protected:
       } else {
         usleep(1000);
       }
-    } while (std::chrono::steady_clock::now() - start_time < timeout && res == 0);
+    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && res == 0);
 
     if (res == 0) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());

@@ -58,6 +58,12 @@ BOOST_AUTO_TEST_CASE(CopyAndMoveSemantics)
   BOOST_REQUIRE(!std::is_move_assignable_v<ReceiverImpl>);
 }
 
+BOOST_AUTO_TEST_CASE(Timeouts)
+{
+  BOOST_REQUIRE_EQUAL(Receiver::s_no_block.count(), 0);
+  BOOST_REQUIRE_GT(Receiver::s_block.count(), 3600000); // "Blocking" must be at least an hour!
+}
+
 BOOST_AUTO_TEST_CASE(StatusChecks)
 {
   ReceiverImpl the_receiver;
