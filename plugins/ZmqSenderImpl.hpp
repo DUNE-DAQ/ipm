@@ -90,7 +90,7 @@ protected:
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, err.what(), N, topic);
       }
-    } while (std::chrono::steady_clock::now() - start_time < timeout && !res);
+    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 
     if (!res) {
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
