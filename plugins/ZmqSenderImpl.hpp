@@ -10,6 +10,7 @@
 #ifndef IPM_PLUGINS_ZMQSENDERIMPL_HPP_
 #define IPM_PLUGINS_ZMQSENDERIMPL_HPP_
 
+#include "ipm/Resolver.hpp"
 #include "ipm/Sender.hpp"
 #include "ipm/ZmqContext.hpp"
 
@@ -52,7 +53,14 @@ public:
   bool can_send() const noexcept override { return m_socket_connected; }
   void connect_for_sends(const nlohmann::json& connection_info)
   {
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    auto service_hosts =
+      Resolver::GetServiceAddresses(connection_info.value<std::string>("service_name", "dunedaqipm"));
+    if (service_hosts.size() > 0) {
+      m_connection_string = "tcp://" + service_hosts[0];
+    }
+    if (m_connection_string == "") {
+      m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    }
     TLOG() << "Connection String is " << m_connection_string;
     try {
 

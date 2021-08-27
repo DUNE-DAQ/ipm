@@ -9,6 +9,7 @@
 #ifndef IPM_PLUGINS_ZMQRECEIVERIMPL_HPP_
 #define IPM_PLUGINS_ZMQRECEIVERIMPL_HPP_
 
+#include "ipm/Resolver.hpp"
 #include "ipm/Subscriber.hpp"
 #include "ipm/ZmqContext.hpp"
 
@@ -54,7 +55,14 @@ public:
   bool can_receive() const noexcept override { return m_socket_connected; }
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    auto service_hosts =
+      Resolver::GetServiceAddresses(connection_info.value<std::string>("service_name", "dunedaqipm"));
+    if (service_hosts.size() > 0) {
+      m_connection_string = "tcp://" + service_hosts[0];
+    }
+    if (m_connection_string == "") {
+      m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    }
     TLOG() << "Connection String is " << m_connection_string;
     try {
       m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
@@ -123,7 +131,8 @@ protected:
       } else {
         usleep(1000);
       }
-    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && res == 0);
+    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
+             res == 0);
 
     if (res == 0) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
