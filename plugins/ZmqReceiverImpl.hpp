@@ -55,10 +55,12 @@ public:
   bool can_receive() const noexcept override { return m_socket_connected; }
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-    auto service_hosts =
-      Resolver::GetServiceAddresses(connection_info.value<std::string>("service_name", "dunedaqipm"));
-    if (service_hosts.size() > 0) {
-      m_connection_string = "tcp://" + service_hosts[0];
+    auto service_name = connection_info.value<std::string>("service_name", "");
+    if (service_name != "") {
+      auto service_hosts = Resolver::GetServiceAddresses(service_name);
+      if (service_hosts.size() > 0) {
+        m_connection_string = "tcp://" + service_hosts[0];
+      }
     }
     if (m_connection_string == "") {
       m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
