@@ -57,7 +57,7 @@ public:
   {
     auto service_name = connection_info.value<std::string>("service_name", "");
     if (service_name != "") {
-      auto service_hosts = Resolver::GetServiceAddresses(service_name);
+      auto service_hosts = GetServiceAddresses(service_name);
       if (service_hosts.size() > 0) {
         m_connection_string = "tcp://" + service_hosts[0];
       }

@@ -29,20 +29,15 @@ ERS_DECLARE_ISSUE(ipm,
                   ((std::string)name)((std::string)error))
 
 namespace ipm {
-class Resolver
-{
-public:
   static std::vector<std::string> GetServiceAddresses(std::string service_name)
   {
     std::vector<std::string> output;
-    int response;
     unsigned char query_buffer[1024];
-    {
-      response = res_query(service_name.c_str(), C_IN, ns_t_srv, query_buffer, sizeof(query_buffer));
-      if (response < 0) {
-        ers::error(ServiceNotFound(ERS_HERE, service_name));
-        return output;
-      }
+
+    auto response = res_query(service_name.c_str(), C_IN, ns_t_srv, query_buffer, sizeof(query_buffer));
+    if (response < 0) {
+      ers::error(ServiceNotFound(ERS_HERE, service_name));
+      return output;
     }
 
     ns_msg nsMsg;
@@ -76,7 +71,6 @@ public:
     }
     return output;
   }
-};
 } // namespace ipm
 } // namespace dunedaq
 
