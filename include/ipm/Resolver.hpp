@@ -18,6 +18,8 @@
 #include <netinet/in.h>
 #include <resolv.h>
 #include <sys/types.h>
+
+#include <string>
 #include <vector>
 
 namespace dunedaq {
@@ -29,7 +31,7 @@ ERS_DECLARE_ISSUE(ipm,
                   ((std::string)name)((std::string)error))
 
 namespace ipm {
-  static std::vector<std::string> GetServiceAddresses(std::string service_name)
+  std::vector<std::string> GetServiceAddresses(std::string service_name)
   {
     std::vector<std::string> output;
     unsigned char query_buffer[1024];
@@ -50,17 +52,17 @@ namespace ipm {
       char name[1024];
       dn_expand(ns_msg_base(nsMsg), ns_msg_end(nsMsg), ns_rr_rdata(rr) + 6, name, sizeof(name));
 
-      auto port = ntohs(*((unsigned short*)ns_rr_rdata(rr) + 2));
+      auto port = ntohs(*((unsigned short*)ns_rr_rdata(rr) + 2)); // NOLINT(runtime/int)
 
       struct addrinfo* result;
-      auto s = getaddrinfo(name, NULL, NULL, &result);
+      auto s = getaddrinfo(name, nullptr, nullptr, &result);
 
       if (s != 0) {
         ers::error(NameNotFound(ERS_HERE, name, std::string(gai_strerror(s))));
         continue;
       }
 
-      for (auto rp = result; rp != NULL; rp = rp->ai_next) {
+      for (auto rp = result; rp != nullptr; rp = rp->ai_next) {
         char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
         getnameinfo(
           rp->ai_addr, rp->ai_addrlen, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
