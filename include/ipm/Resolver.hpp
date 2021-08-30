@@ -36,6 +36,11 @@ namespace ipm {
     std::vector<std::string> output;
     unsigned char query_buffer[1024];
 
+    // Check if we're given a "bare" service name, convert to DNS service name, assuming TCP
+    if(std::count(service_name.begin(), service_name.end(), '.') == 0) {
+       service_name = "_" + service_name + "._tcp";
+    }
+
     auto response = res_query(service_name.c_str(), C_IN, ns_t_srv, query_buffer, sizeof(query_buffer));
     if (response < 0) {
       ers::error(ServiceNotFound(ERS_HERE, service_name));
