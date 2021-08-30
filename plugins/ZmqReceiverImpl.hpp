@@ -56,8 +56,9 @@ public:
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
     auto service_name = connection_info.value<std::string>("service_name", "");
+    auto host_name = connection_info.value<std::string>("host_name", "");
     if (service_name != "") {
-      auto service_hosts = GetServiceAddresses(service_name);
+      auto service_hosts = GetServiceAddresses(service_name, host_name);
       if (service_hosts.size() > 0) {
         m_connection_string = "tcp://" + service_hosts[0];
       }

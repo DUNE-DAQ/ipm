@@ -31,7 +31,7 @@ ERS_DECLARE_ISSUE(ipm,
                   ((std::string)name)((std::string)error))
 
 namespace ipm {
-  std::vector<std::string> GetServiceAddresses(std::string service_name)
+  std::vector<std::string> GetServiceAddresses(std::string service_name, std::string hostname)
   {
     std::vector<std::string> output;
     unsigned char query_buffer[1024];
@@ -39,9 +39,13 @@ namespace ipm {
     // Check if we're given a "bare" service name, convert to DNS service name, assuming TCP
     if(std::count(service_name.begin(), service_name.end(), '.') == 0) {
        service_name = "_" + service_name + "._tcp";
+
+       if (!hostname.empty()) {
+         service_name += "." + hostname;
+       }
     }
 
-    auto response = res_query(service_name.c_str(), C_IN, ns_t_srv, query_buffer, sizeof(query_buffer));
+    auto response = res_search(service_name.c_str(), C_IN, ns_t_srv, query_buffer, sizeof(query_buffer));
     if (response < 0) {
       ers::error(ServiceNotFound(ERS_HERE, service_name));
       return output;
