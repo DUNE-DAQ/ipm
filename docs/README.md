@@ -15,7 +15,7 @@ Users should interact with IPM via the interfaces `dunedaq::ipm::Sender`, `duned
 * `ZmqPublisher` implementing `dunedaq::ipm::Sender` in the publisher/subscriber pattern
 * `ZmqSubscriber` implementing `dunedaq::ipm::Subscriber`
 
-Basic example of the sender/receiver pattern:
+## Basic example of the sender/receiver pattern:
 
 ```c++
 // Sender side
@@ -33,7 +33,7 @@ Receiver::Response response=receiver->receive(std::chrono::milliseconds(10));
 // ... do something with response.data or response.metadata
 ```
 
-Basic example of the publisher/subscriber pattern:
+## Basic example of the publisher/subscriber pattern:
 
 ```c++
 // Publisher side
@@ -54,3 +54,10 @@ Receiver::Response response=subscriber->receive(std::chrono::milliseconds(10));
 
 More complete examples can be found in the `test/plugins` directory.
 
+## ZMQ Configuration Parameters
+
+The ZmqSender, ZmqReceiver, ZmqSubscriber and ZmqPublisher plugins all take the same configuration options:
+
+* "connection_string": A ZMQ endpoint (usually of form tcp://IP:PORT, but other transports such as inproc may be used)
+* "service_name": To perform DNS SRV record lookup, the service name can be specified either completely (e.g. _fragments-0._tcp.dataflow) or simply (e.g. fragments-0)
+* "host_name": When specifying simple service_names, the host_name will be used to help build the complete service name: \_<service_name>.\_tcp.<host_name>_
