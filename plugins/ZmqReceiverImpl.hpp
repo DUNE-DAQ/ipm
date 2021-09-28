@@ -58,7 +58,7 @@ public:
     auto service_name = connection_info.value<std::string>("service_name", "");
     auto host_name = connection_info.value<std::string>("host_name", "");
     if (service_name != "") {
-      auto service_hosts = toolbox::GetServiceAddresses(service_name, host_name);
+      auto service_hosts = toolbox::get_service_addresses(service_name, host_name);
       if (service_hosts.size() > 0) {
         m_connection_string = "tcp://" + service_hosts[0];
       }
