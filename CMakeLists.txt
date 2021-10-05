@@ -5,15 +5,17 @@ find_package(daq-cmake REQUIRED)
 
 daq_setup_environment()
 
-find_package(appfwk REQUIRED)
+#find_package(appfwk REQUIRED)
 find_package(logging REQUIRED)
-
+find_package(cetlib REQUIRED)
 find_package(cppzmq REQUIRED)
 find_package(ers REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json cppzmq pthread)
 
-daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES appfwk::appfwk logging::logging cppzmq)
+#daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES appfwk::appfwk logging::logging cppzmq)
+daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES ${IPM_DEPENDENCIES})
 
 daq_add_plugin(ZmqSender duneIPM LINK_LIBRARIES ipm)
 daq_add_plugin(ZmqReceiver duneIPM LINK_LIBRARIES ipm)
