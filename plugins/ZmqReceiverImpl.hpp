@@ -42,7 +42,12 @@ public:
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (m_connection_string != "" && m_socket_connected) {
       try {
+        if (m_receiver_type == ReceiverType::Subscriber) {
+        
         m_socket.disconnect(m_connection_string);
+        } else {
+          m_socket.unbind(m_connection_string);
+        }
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
         ers::error(ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string));
@@ -58,7 +63,11 @@ public:
     TLOG() << "Connection String is " << m_connection_string;
     try {
       m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-      m_socket.connect(m_connection_string);
+      if (m_receiver_type == ReceiverType::Subscriber) {
+        m_socket.connect(m_connection_string);
+      } else {
+        m_socket.bind(m_connection_string);
+      }
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
       throw ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string);
@@ -123,7 +132,8 @@ protected:
       } else {
         usleep(1000);
       }
-    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && res == 0);
+    } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
+             res == 0);
 
     if (res == 0) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());

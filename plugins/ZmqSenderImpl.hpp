@@ -32,6 +32,7 @@ public:
   explicit ZmqSenderImpl(SenderType type)
     : m_socket(ZmqContext::instance().GetContext(),
                type == SenderType::Push ? zmq::socket_type::push : zmq::socket_type::pub)
+    , m_sender_type(type)
   {}
 
   ~ZmqSenderImpl()
@@ -39,8 +40,11 @@ public:
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (m_connection_string != "" && m_socket_connected) {
       try {
-
-        m_socket.unbind(m_connection_string);
+        if (m_sender_type == SenderType::Push) {
+          m_socket.disconnect(m_connection_string);
+        } else {
+          m_socket.unbind(m_connection_string);
+        }
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
         ers::error(ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string));
@@ -57,7 +61,11 @@ public:
     try {
 
       m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-      m_socket.bind(m_connection_string);
+      if (m_sender_type == SenderType::Push) {
+        m_socket.connect(m_connection_string);
+      } else {
+        m_socket.bind(m_connection_string);
+      }
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
       throw ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string);
@@ -102,6 +110,7 @@ protected:
 private:
   zmq::socket_t m_socket;
   std::string m_connection_string;
+  SenderType m_sender_type;
   bool m_socket_connected;
 };
 
