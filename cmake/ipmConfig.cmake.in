@@ -3,8 +3,8 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(appfwk)
 find_dependency(ers)
+find_dependency(cetlib)
 find_dependency(nlohmann_json)
 find_dependency(cppzmq)
 
