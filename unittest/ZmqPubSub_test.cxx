@@ -37,9 +37,10 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json empty_json = nlohmann::json::object();
-  the_receiver->connect_for_receives(empty_json);
-  the_sender->connect_for_sends(empty_json);
+  nlohmann::json config_json;
+  config_json["connection_string"] = "inproc://default";
+  the_sender->connect_for_sends(config_json);
+  the_receiver->connect_for_receives(config_json);
 
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
