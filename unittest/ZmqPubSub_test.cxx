@@ -72,4 +72,38 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
     [&](dunedaq::ipm::ReceiveTimeoutExpired) { return elapsed_time_milliseconds(before_recv) >= 2000; });
 }
 
+BOOST_AUTO_TEST_CASE(MultiplePublishers)
+{
+  auto first_publisher = make_ipm_sender("ZmqPublisher");
+  auto second_publisher = make_ipm_sender("ZmqPublisher");
+  auto the_subscriber = make_ipm_subscriber("ZmqSubscriber");
+
+  nlohmann::json first_json, second_json, sub_json;
+  first_json["connection_string"] = "inproc://foo";
+  first_publisher->connect_for_sends(first_json);
+  second_json["connection_string"] = "inproc://bar";
+  second_publisher->connect_for_sends(second_json);
+  sub_json["connection_strings"] = { "inproc://foo", "inproc://bar" };
+  the_subscriber->connect_for_receives(sub_json);
+
+  the_subscriber->subscribe("testTopic");
+
+  std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
+  first_publisher->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+  auto response = the_subscriber->receive(Receiver::s_block);
+  BOOST_REQUIRE_EQUAL(response.data.size(), 4);
+  BOOST_REQUIRE_EQUAL(response.data[0], 'T');
+  BOOST_REQUIRE_EQUAL(response.data[1], 'E');
+  BOOST_REQUIRE_EQUAL(response.data[2], 'S');
+  BOOST_REQUIRE_EQUAL(response.data[3], 'T');
+
+  second_publisher->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+  auto response2 = the_subscriber->receive(Receiver::s_block);
+  BOOST_REQUIRE_EQUAL(response2.data.size(), 4);
+  BOOST_REQUIRE_EQUAL(response2.data[0], 'T');
+  BOOST_REQUIRE_EQUAL(response2.data[1], 'E');
+  BOOST_REQUIRE_EQUAL(response2.data[2], 'S');
+  BOOST_REQUIRE_EQUAL(response2.data[3], 'T');
+}
+
 BOOST_AUTO_TEST_SUITE_END()
