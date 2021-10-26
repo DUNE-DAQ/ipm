@@ -47,7 +47,8 @@ public:
         }
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
-        ers::error(ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string));
+        auto operation = m_sender_type == SenderType::Push ? "disconnect" : "unbind";
+        ers::error(ZmqOperationError(ERS_HERE, operation, "send", err.what(), m_connection_string));
       }
     }
     m_socket.close();
@@ -68,7 +69,8 @@ public:
       }
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
-      throw ZmqSenderBindError(ERS_HERE, err.what(), m_connection_string);
+      auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
+      ers::error(ZmqOperationError(ERS_HERE, operation, "send", err.what(), m_connection_string));
     }
   }
 

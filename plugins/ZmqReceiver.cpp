@@ -30,7 +30,7 @@ public:
         m_socket.unbind(m_connection_string);
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
-        ers::error(ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string));
+        ers::error(ZmqOperationError(ERS_HERE, "unbind", "receive", err.what(), m_connection_string));
       }
     }
     m_socket.close();
@@ -45,7 +45,7 @@ public:
       m_socket.bind(m_connection_string);
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
-      throw ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_string);
+      throw ZmqOperationError(ERS_HERE, "bind", "receive", err.what(), m_connection_string);
     }
   }
 

@@ -32,7 +32,7 @@ public:
         try {
           m_socket.disconnect(conn_string);
         } catch (zmq::error_t const& err) {
-          ers::error(ZmqReceiverConnectError(ERS_HERE, err.what(), conn_string));
+          ers::error(ZmqOperationError(ERS_HERE, "disconnect", "receive", err.what(), conn_string));
         }
       }
     }
@@ -52,14 +52,14 @@ public:
     try {
       m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
     } catch (zmq::error_t const& err) {
-      throw ZmqReceiverConnectError(ERS_HERE, err.what(), m_connection_strings[0]);
+      throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), m_connection_strings[0]);
     }
     for (auto& conn_string : m_connection_strings) {
       try {
         TLOG() << "Connecting to publisher at " << conn_string;
         m_socket.connect(conn_string);
       } catch (zmq::error_t const& err) {
-        throw ZmqReceiverConnectError(ERS_HERE, err.what(), conn_string);
+        throw ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string);
       }
     }
     m_socket_connected = true;
