@@ -14,6 +14,7 @@
 #include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>

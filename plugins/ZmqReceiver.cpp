@@ -12,6 +12,8 @@
 
 #include "logging/Logging.hpp"
 
+#include <string>
+
 namespace dunedaq {
 namespace ipm {
 
