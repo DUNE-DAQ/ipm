@@ -25,10 +25,11 @@ namespace dunedaq {
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqOperationError,
-                  "An exception occured while calling " << operation << " on the ZMQ " << direction << " socket: " << what << " (connection_string: "
-                                                                         << connection_string << ")",
-                  ((std::string)operation)((std::string)direction)((const char*)what)((std::string)connection_string)) // NOLINT
-                                                                       /// @endcond LCOV_EXCL_STOP
+                  "An exception occured while calling " << operation << " on the ZMQ " << direction << " socket: "
+                                                        << what << " (connection_string: " << connection_string << ")",
+                  ((std::string)operation)((std::string)direction)((const char*)what)(
+                    (std::string)connection_string)) // NOLINT
+                                                     /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while sending
