@@ -5,7 +5,6 @@ find_package(daq-cmake REQUIRED)
 
 daq_setup_environment()
 
-#find_package(appfwk REQUIRED)
 find_package(logging REQUIRED)
 find_package(cetlib REQUIRED)
 find_package(cppzmq REQUIRED)
