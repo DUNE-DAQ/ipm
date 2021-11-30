@@ -16,29 +16,20 @@
 namespace dunedaq {
 
 /**
- * @brief An ERS Error indicating that an exception was thrown from ZMQ while connecting the receiver
+ * @brief An ERS Error indicating that an exception was thrown from ZMQ while performing an operation
+ * @param operation The operation that failed (connect/bind/disconnect/unbind)
+ * @param direction The direction of the socket (send/receive)
  * @param what The zmq::error_t exception message
  * @param connection_string The connection string that caused the error
  * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
 ERS_DECLARE_ISSUE(ipm,
-                  ZmqReceiverConnectError,
-                  "An exception occured while connecting the receiver: " << what << " (connection_string: "
-                                                                         << connection_string << ")",
-                  ((const char*)what)((std::string)connection_string)) // NOLINT
-                                                                       /// @endcond LCOV_EXCL_STOP
-
-/**
- * @brief An ERS Error indicating that an exception was thrown from ZMQ while binding the sender
- * @param what The zmq::error_t exception message
- * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
- */
-ERS_DECLARE_ISSUE(ipm,
-                  ZmqSenderBindError,
-                  "An exception occured while binding the sender: " << what << " (connection_string: "
-                                                                    << connection_string << ")",
-                  ((const char*)what)((std::string)connection_string)) // NOLINT
-                                                                       /// @endcond LCOV_EXCL_STOP
+                  ZmqOperationError,
+                  "An exception occured while calling " << operation << " on the ZMQ " << direction << " socket: "
+                                                        << what << " (connection_string: " << connection_string << ")",
+                  ((std::string)operation)((std::string)direction)((const char*)what)(
+                    (std::string)connection_string)) // NOLINT
+                                                     /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while sending
