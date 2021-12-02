@@ -5,12 +5,12 @@ find_package(daq-cmake REQUIRED)
 
 daq_setup_environment()
 
-#find_package(appfwk REQUIRED)
 find_package(logging REQUIRED)
 find_package(cetlib REQUIRED)
 find_package(cppzmq REQUIRED)
 find_package(ers REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework program_options REQUIRED)
 
 set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json cppzmq pthread)
 
