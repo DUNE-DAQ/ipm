@@ -3,10 +3,12 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(appfwk)
 find_dependency(ers)
+find_dependency(cetlib)
 find_dependency(nlohmann_json)
 find_dependency(cppzmq)
+find_dependency(logging)
+find_dependency(Boost COMPONENTS program_options)
 
 # Figure out whether or not this dependency is an installed package or
 # in repo form
