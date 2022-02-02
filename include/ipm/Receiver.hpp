@@ -97,6 +97,9 @@ public:
 
   Response receive(const duration_t& timeout, message_size_t num_bytes = s_any_size);
 
+  virtual void register_callback(std::function<void(Response&)>) = 0;
+  virtual void unregister_callback() = 0;
+
   Receiver(const Receiver&) = delete;
   Receiver& operator=(const Receiver&) = delete;
 
