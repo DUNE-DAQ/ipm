@@ -6,6 +6,7 @@
  * received with this code.
  */
 
+#include "CallbackAdapter.hpp"
 #include "ipm/Subscriber.hpp"
 
 #define BOOST_TEST_MODULE Subscriber_test // NOLINT
@@ -33,9 +34,20 @@ public:
     , m_subscriptions()
   {}
 
-  void connect_for_receives(const nlohmann::json& /* connection_info */) { m_can_receive = true; }
+  void connect_for_receives(const nlohmann::json& /* connection_info */)
+  {
+    m_can_receive = true;
+    m_callback_adapter.set_receiver(this);
+  }
   bool can_receive() const noexcept override { return m_can_receive; }
-  void sabotage_my_receiving_ability() { m_can_receive = false; }
+  void sabotage_my_receiving_ability()
+  {
+    unregister_callback();
+    m_can_receive = false;
+  }
+
+  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
+  void unregister_callback() { m_callback_adapter.clear_callback(); }
 
   void subscribe(std::string const& topic) override { m_subscriptions.insert(topic); }
   void unsubscribe(std::string const& topic) override { m_subscriptions.erase(topic); }
@@ -55,6 +67,7 @@ protected:
 private:
   bool m_can_receive;
   std::set<std::string> m_subscriptions;
+  CallbackAdapter m_callback_adapter;
 };
 
 } // namespace ""
@@ -99,6 +112,24 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
   BOOST_REQUIRE_EXCEPTION(the_subscriber.receive(Subscriber::s_no_block),
                           dunedaq::ipm::KnownStateForbidsReceive,
                           [&](dunedaq::ipm::KnownStateForbidsReceive) { return true; });
+}
+
+BOOST_AUTO_TEST_CASE(Callback)
+{
+  SubscriberImpl the_subscriber;
+
+  nlohmann::json j;
+  the_subscriber.connect_for_receives(j);
+  BOOST_REQUIRE(the_subscriber.can_receive());
+
+  std::atomic<size_t> callback_call_count = 0;
+  auto callback_fun = [&](Receiver::Response&) { callback_call_count++; }; // NOLINT
+
+  the_subscriber.register_callback(callback_fun);
+  usleep(10000);
+  the_subscriber.unregister_callback();
+
+  BOOST_REQUIRE_GT(callback_call_count, 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

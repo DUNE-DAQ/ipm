@@ -9,6 +9,8 @@
 #include "ipm/Sender.hpp"
 #include "ipm/Subscriber.hpp"
 
+#include "logging/Logging.hpp"
+
 #define BOOST_TEST_MODULE ZmqPubSub_test // NOLINT
 
 #include "boost/test/unit_test.hpp"
@@ -70,6 +72,68 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
     the_receiver->receive(std::chrono::milliseconds(2000)),
     dunedaq::ipm::ReceiveTimeoutExpired,
     [&](dunedaq::ipm::ReceiveTimeoutExpired) { return elapsed_time_milliseconds(before_recv) >= 2000; });
+}
+
+BOOST_AUTO_TEST_CASE(CallbackTest)
+{
+
+  auto the_receiver = make_ipm_subscriber("ZmqSubscriber");
+  BOOST_REQUIRE(the_receiver != nullptr);
+  BOOST_REQUIRE(!the_receiver->can_receive());
+
+  auto the_sender = make_ipm_sender("ZmqPublisher");
+  BOOST_REQUIRE(the_sender != nullptr);
+  BOOST_REQUIRE(!the_sender->can_send());
+
+  nlohmann::json config_json;
+  config_json["connection_string"] = "inproc://default";
+  the_sender->connect_for_sends(config_json);
+  the_receiver->connect_for_receives(config_json);
+
+  BOOST_REQUIRE(the_receiver->can_receive());
+  BOOST_REQUIRE(the_sender->can_send());
+
+  the_receiver->subscribe("testTopic");
+
+  std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
+  std::atomic<bool> message_received = false;
+
+  auto callback_fun = [&](Receiver::Response& res) {
+    TLOG() << "Callback function called with res.data.size() == " << static_cast<int>(res.data.size());
+    BOOST_REQUIRE_EQUAL(res.data.size(), test_data.size());
+    for (size_t ii = 0; ii < res.data.size(); ++ii) {
+      BOOST_REQUIRE_EQUAL(res.data[ii], test_data[ii]);
+    }
+    message_received = true;
+  };
+  the_receiver->register_callback(callback_fun);
+
+  the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block);
+  usleep(100000);
+  BOOST_REQUIRE_EQUAL(message_received, false);
+
+  message_received = false;
+  test_data = { 'A', 'N', 'O', 'T', 'H', 'E', 'R', ' ', 'T', 'E', 'S', 'T' };
+  the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+  while (!message_received.load()) {
+    usleep(15000);
+  }
+
+  message_received = false;
+  test_data = { 'A', ' ', 'T', 'H', 'I', 'R', 'D', ' ', 'T', 'E', 'S', 'T' };
+  the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "ignoredTopic");
+  usleep(100000);
+  BOOST_REQUIRE_EQUAL(message_received, false);
+
+  the_receiver->unregister_callback();
+  message_received = false;
+  test_data = { 'A', ' ', 'F', 'O', 'U', 'R', 'T', 'H', ' ', 'T', 'E', 'S', 'T' };
+  the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+
+  usleep(100000);
+  BOOST_REQUIRE_EQUAL(message_received, false);
+  auto response = the_receiver->receive(Receiver::s_block);
+  BOOST_REQUIRE_EQUAL(response.data.size(), test_data.size());
 }
 
 BOOST_AUTO_TEST_CASE(MultiplePublishers)

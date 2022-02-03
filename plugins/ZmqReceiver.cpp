@@ -7,6 +7,7 @@
  * received with this code.
  */
 
+#include "CallbackAdapter.hpp"
 #include "ipm/Receiver.hpp"
 #include "ipm/ZmqContext.hpp"
 
@@ -26,6 +27,7 @@ public:
 
   ~ZmqReceiver()
   {
+    unregister_callback();
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (m_connection_string != "" && m_socket_connected) {
       try {
@@ -49,9 +51,13 @@ public:
     } catch (zmq::error_t const& err) {
       throw ZmqOperationError(ERS_HERE, "bind", "receive", err.what(), m_connection_string);
     }
+    m_callback_adapter.set_receiver(this);
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
+
+  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
+  void unregister_callback() { m_callback_adapter.clear_callback(); }
 
 protected:
   Receiver::Response receive_(const duration_t& timeout) override
@@ -106,6 +112,7 @@ private:
   zmq::socket_t m_socket;
   std::string m_connection_string;
   bool m_socket_connected{ false };
+  CallbackAdapter m_callback_adapter;
 };
 } // namespace ipm
 } // namespace dunedaq

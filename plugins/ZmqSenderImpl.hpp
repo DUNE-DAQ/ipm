@@ -70,7 +70,7 @@ public:
       m_socket_connected = true;
     } catch (zmq::error_t const& err) {
       auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
-      ers::error(ZmqOperationError(ERS_HERE, operation, "send", err.what(), m_connection_string));
+      throw ZmqOperationError(ERS_HERE, operation, "send", err.what(), m_connection_string);
     }
   }
 
