@@ -106,7 +106,7 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(5) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
+    TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
   }
 
 private:
