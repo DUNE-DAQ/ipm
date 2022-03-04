@@ -136,7 +136,7 @@ protected:
     }
 
     TLOG_DEBUG(15) << "Subscriber: Returning output with metadata size " << output.metadata.size() << " and data size "
-                  << output.data.size();
+                   << output.data.size();
     return output;
   }
 

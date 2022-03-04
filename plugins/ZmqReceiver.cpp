@@ -104,7 +104,7 @@ protected:
     }
 
     TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Returning output with metadata size "
-                  << output.metadata.size() << " and data size " << output.data.size();
+                   << output.metadata.size() << " and data size " << output.data.size();
     return output;
   }
 
