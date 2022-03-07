@@ -8,6 +8,7 @@
  * received with this code.
  */
 
+#include "CallbackAdapter.hpp"
 #include "ipm/Subscriber.hpp"
 #include "ipm/ZmqContext.hpp"
 
@@ -28,6 +29,7 @@ public:
 
   ~ZmqSubscriber()
   {
+    unregister_callback();
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (!m_connection_strings.empty() && m_socket_connected) {
       m_socket_connected = false;
@@ -66,6 +68,7 @@ public:
       }
     }
     m_socket_connected = true;
+    m_callback_adapter.set_receiver(this);
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
@@ -87,6 +90,9 @@ public:
     }
   }
 
+  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
+  void unregister_callback() { m_callback_adapter.clear_callback(); }
+
 protected:
   Receiver::Response receive_(const duration_t& timeout) override
   {
@@ -98,14 +104,14 @@ protected:
     do {
 
       try {
-        TLOG_DEBUG(11) << "Subscriber: Going to receive header";
+        TLOG_DEBUG(20) << "Subscriber: Going to receive header";
         res = m_socket.recv(&hdr);
-        TLOG_DEBUG(21) << "Subscriber: Recv res=" << res << " for header (hdr.size() == " << hdr.size() << ")";
+        TLOG_DEBUG(25) << "Subscriber: Recv res=" << res << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
       if (res > 0 || hdr.more()) {
-        TLOG_DEBUG(11) << "Subscriber: Going to receive data";
+        TLOG_DEBUG(20) << "Subscriber: Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
@@ -116,7 +122,7 @@ protected:
         } catch (zmq::error_t const& err) {
           throw ZmqReceiveError(ERS_HERE, err.what(), "data");
         }
-        TLOG_DEBUG(21) << "Subscriber: Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
+        TLOG_DEBUG(25) << "Subscriber: Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else {
@@ -129,8 +135,8 @@ protected:
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(5) << "Subscriber: Returning output with metadata size " << output.metadata.size() << " and data size "
-                  << output.data.size();
+    TLOG_DEBUG(15) << "Subscriber: Returning output with metadata size " << output.metadata.size() << " and data size "
+                   << output.data.size();
     return output;
   }
 
@@ -138,6 +144,7 @@ private:
   zmq::socket_t m_socket;
   std::vector<std::string> m_connection_strings;
   bool m_socket_connected{ false };
+  CallbackAdapter m_callback_adapter;
 };
 } // namespace ipm
 } // namespace dunedaq
