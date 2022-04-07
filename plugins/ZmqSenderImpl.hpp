@@ -14,6 +14,7 @@
 #include "ipm/ZmqContext.hpp"
 
 #include "logging/Logging.hpp"
+#include "utilities/Resolver.hpp"
 #include "zmq.hpp"
 
 #include <string>
@@ -57,21 +58,39 @@ public:
   bool can_send() const noexcept override { return m_socket_connected; }
   void connect_for_sends(const nlohmann::json& connection_info)
   {
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << m_connection_string;
-    try {
-
-      m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-      if (m_sender_type == SenderType::Push) {
-        m_socket.connect(m_connection_string);
-      } else {
-        m_socket.bind(m_connection_string);
+      try {
+          m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
       }
-      m_socket_connected = true;
-    } catch (zmq::error_t const& err) {
-      auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
-      throw ZmqOperationError(ERS_HERE, operation, "send", err.what(), m_connection_string);
-    }
+      catch (zmq::error_t const& err) {
+          throw ZmqOperationError(ERS_HERE, "set timeout", "send", err.what(), connection_info.value<std::string>("connection_string", "inproc://default"));
+      }
+
+      auto resolved = utilities::get_ips_from_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      if (resolved.size() == 0) {
+          throw ZmqOperationError(ERS_HERE, "resolve connection_string", "send", "Unable to resolve connection_string", connection_info.value<std::string>("connection_string", "inproc://default"));
+      }
+      for (auto& connection_string : resolved) {
+          TLOG() << "Connection String is " << connection_string;
+          try {
+              if (m_sender_type == SenderType::Push) {
+                  m_socket.connect(connection_string);
+              }
+              else {
+                  m_socket.bind(connection_string);
+              }
+              m_connection_string = connection_string;
+              m_socket_connected = true;
+              break;
+          }
+          catch (zmq::error_t const& err) {
+              auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
+              ers::error( ZmqOperationError(ERS_HERE, operation, "send", err.what(), connection_string));
+          }
+      }
+      if (!m_socket_connected) {
+          auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
+          throw ZmqOperationError(ERS_HERE, operation, "send", "Operation failed for all resolved connection strings", "");
+      }
   }
 
 protected:
