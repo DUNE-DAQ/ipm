@@ -12,6 +12,7 @@
 #include "ipm/ZmqContext.hpp"
 
 #include "logging/Logging.hpp"
+#include "utilities/Resolver.hpp"
 
 #include <string>
 
@@ -42,15 +43,33 @@ public:
 
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
-    TLOG() << "Connection String is " << m_connection_string;
     try {
-      m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
-      m_socket.bind(m_connection_string);
-      m_socket_connected = true;
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, "bind", "receive", err.what(), m_connection_string);
+        m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
     }
+    catch (zmq::error_t const& err) {
+        throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), connection_info.value<std::string>("connection_string", "inproc://default"));
+    }
+
+    auto resolved = utilities::get_ips_from_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+    if (resolved.size() == 0) {
+        throw ZmqOperationError(ERS_HERE, "resolve connection_string", "receive", "Unable to resolve connection_string", connection_info.value<std::string>("connection_string", "inproc://default"));
+    }
+    for (auto& connection_string : resolved) {
+        TLOG() << "Connection String is " << connection_string;
+        try {
+            m_socket.bind(connection_string);
+            m_connection_string = connection_string;
+            m_socket_connected = true;
+            break;
+        }
+        catch (zmq::error_t const& err) {
+            ers::error(ZmqOperationError(ERS_HERE, "bind", "receive", err.what(), connection_string));
+        }
+    }
+    if (!m_socket_connected) {
+        throw ZmqOperationError(ERS_HERE, "bind", "receive", "Bind failed for all resolved connection strings", "");
+    }
+
     m_callback_adapter.set_receiver(this);
   }
 
