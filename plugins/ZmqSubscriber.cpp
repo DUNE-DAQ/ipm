@@ -47,22 +47,22 @@ public:
 
   void connect_for_receives(const nlohmann::json& connection_info) override
   {
-      std::vector<std::string> connection_strings;
+    std::vector<std::string> connection_strings;
     if (connection_info.contains("connection_string")) {
-        connection_strings.push_back(connection_info.value<std::string>("connection_string", ""));
+      connection_strings.push_back(connection_info.value<std::string>("connection_string", ""));
     }
 
     for (auto& conn_string : connection_info.value<std::vector<std::string>>("connection_strings", {})) {
-        connection_strings.push_back(conn_string);
+      connection_strings.push_back(conn_string);
     }
     for (auto& conn_string : connection_strings) {
-        auto resolved = utilities::get_ips_from_hostname(conn_string);
-        for (auto& res : resolved) {
-            m_connection_strings.push_back(res);
-        }
+      auto resolved = utilities::get_ips_from_hostname(conn_string);
+      for (auto& res : resolved) {
+        m_connection_strings.push_back(res);
+      }
     }
     if (m_connection_strings.size() == 0) {
-        throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
+      throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
     }
 
     TLOG() << "Setting socket options";
