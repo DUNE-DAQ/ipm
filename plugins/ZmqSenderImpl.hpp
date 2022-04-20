@@ -65,7 +65,8 @@ public:
           throw ZmqOperationError(ERS_HERE, "set timeout", "send", err.what(), connection_info.value<std::string>("connection_string", "inproc://default"));
       }
 
-      auto resolved = utilities::get_ips_from_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      auto resolved =
+        utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
       if (resolved.size() == 0) {
           throw ZmqOperationError(ERS_HERE, "resolve connection_string", "send", "Unable to resolve connection_string", connection_info.value<std::string>("connection_string", "inproc://default"));
       }
