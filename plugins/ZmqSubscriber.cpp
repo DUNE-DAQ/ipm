@@ -56,10 +56,16 @@ public:
       connection_strings.push_back(conn_string);
     }
     for (auto& conn_string : connection_strings) {
-      auto resolved = utilities::resolve_uri_hostname(conn_string);
-      for (auto& res : resolved) {
-        m_connection_strings.push_back(res);
+      try {
+        auto resolved = utilities::resolve_uri_hostname(conn_string);
+        for (auto& res : resolved) {
+          m_connection_strings.push_back(res);
+        }
+      } catch (utilities::InvalidUri const& err) {
+        ers::warning(
+          ZmqOperationError(ERS_HERE, "resolve connections", "receive", "Invalid URI detected ", conn_string, err));
       }
+
     }
     if (m_connection_strings.size() == 0) {
       throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
