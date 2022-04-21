@@ -7,7 +7,7 @@
  */
 
 #include "ipm/Sender.hpp"
-#include "ipm/ZmqContext.hpp"
+#include "utilities/Issues.hpp"
 
 #define BOOST_TEST_MODULE ZmqSender_test // NOLINT
 
@@ -34,8 +34,9 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 
   nlohmann::json config_json;
   config_json["connection_string"] = "invalid_connection_string";
-  BOOST_REQUIRE_EXCEPTION(
-    the_sender->connect_for_sends(config_json), ZmqOperationError, [](const ZmqOperationError&) { return true; });
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json),
+                          dunedaq::utilities::InvalidUri,
+                          [](const dunedaq::utilities::InvalidUri&) { return true; });
   BOOST_REQUIRE(!the_sender->can_send());
 }
 BOOST_AUTO_TEST_SUITE_END()
