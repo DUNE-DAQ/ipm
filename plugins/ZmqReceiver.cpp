@@ -53,8 +53,19 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
-    auto resolved =
-      utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+    std::vector<std::string> resolved;
+    try {
+      resolved =
+        utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+    } catch (utilities::InvalidUri const& err) {
+      throw ZmqOperationError(ERS_HERE,
+                              "resolve connection_string",
+                              "receive",
+                              "An invalid URI was passed",
+                              connection_info.value<std::string>("connection_string", "inproc://default"),
+                              err);
+    }
+
     if (resolved.size() == 0) {
       throw ZmqOperationError(ERS_HERE,
                               "resolve connection_string",
