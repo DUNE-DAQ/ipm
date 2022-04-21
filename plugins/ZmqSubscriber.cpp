@@ -56,7 +56,7 @@ public:
       connection_strings.push_back(conn_string);
     }
     for (auto& conn_string : connection_strings) {
-      auto resolved = utilities::get_ips_from_hostname(conn_string);
+      auto resolved = utilities::resolve_uri_hostname(conn_string);
       for (auto& res : resolved) {
         m_connection_strings.push_back(res);
       }

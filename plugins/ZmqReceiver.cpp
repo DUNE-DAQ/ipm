@@ -54,7 +54,7 @@ public:
     }
 
     auto resolved =
-      utilities::get_ips_from_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
     if (resolved.size() == 0) {
       throw ZmqOperationError(ERS_HERE,
                               "resolve connection_string",
