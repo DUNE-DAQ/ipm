@@ -27,10 +27,12 @@
 #include "cetlib/compiler_macros.h"
 #include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
+#include "opmonlib/InfoCollector.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
 
 namespace dunedaq {
 // Disable coverage collection LCOV_EXCL_START
@@ -106,8 +108,14 @@ public:
   Receiver(Receiver&&) = delete;
   Receiver& operator=(Receiver&&) = delete;
 
+  void get_info(opmonlib::InfoCollector& ci, int /*level*/);
+
 protected:
   virtual Response receive_(const duration_t& timeout) = 0;
+
+private:
+  mutable std::atomic<size_t> m_bytes;
+  mutable std::atomic<size_t> m_messages;
 };
 
 inline std::shared_ptr<Receiver>
