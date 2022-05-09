@@ -12,8 +12,14 @@ find_package(cppzmq REQUIRED)
 find_package(ers REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(Boost COMPONENTS unit_test_framework program_options REQUIRED)
+find_package(opmonlib REQUIRED)
 
-set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json utilities::utilities cppzmq pthread)
+
+set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json utilities::utilities opmonlib::opmonlib cppzmq pthread)
+
+daq_codegen( senderinfo.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
+daq_codegen( receiverinfo.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
+
 
 #daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES appfwk::appfwk logging::logging cppzmq)
 daq_add_library(Receiver.cpp Sender.cpp CallbackAdapter.cpp LINK_LIBRARIES ${IPM_DEPENDENCIES})
@@ -26,7 +32,6 @@ daq_add_plugin(ZmqSubscriber duneIPM LINK_LIBRARIES ipm)
 daq_add_unit_test(Sender_test LINK_LIBRARIES ipm)
 daq_add_unit_test(Receiver_test LINK_LIBRARIES ipm)
 daq_add_unit_test(Subscriber_test LINK_LIBRARIES ipm)
-
 
 daq_add_unit_test(ZmqSender_test LINK_LIBRARIES ipm)
 daq_add_unit_test(ZmqReceiver_test LINK_LIBRARIES ipm)
