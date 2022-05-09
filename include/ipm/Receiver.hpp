@@ -114,8 +114,8 @@ protected:
   virtual Response receive_(const duration_t& timeout) = 0;
 
 private:
-  mutable std::atomic<size_t> m_bytes;
-  mutable std::atomic<size_t> m_messages;
+  mutable std::atomic<size_t> m_bytes = {0};
+  mutable std::atomic<size_t> m_messages ={0};
 };
 
 inline std::shared_ptr<Receiver>

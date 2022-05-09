@@ -104,8 +104,8 @@ protected:
   virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
 
 private:
-  mutable std::atomic<size_t> m_bytes;
-  mutable std::atomic<size_t> m_messages;
+  mutable std::atomic<size_t> m_bytes = {0};
+  mutable std::atomic<size_t> m_messages = {0};
 };
 
 inline std::shared_ptr<Sender>

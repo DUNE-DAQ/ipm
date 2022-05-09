@@ -44,7 +44,7 @@ dunedaq::ipm::Sender::get_info(opmonlib::InfoCollector& ci, int /*level*/) {
   senderinfo::Info i;
 
   i.bytes = m_bytes.exchange(0);
-  i.messages = m_bytes.exchange(0);
+  i.messages = m_messages.exchange(0);
 
   ci.add(i);
 }
