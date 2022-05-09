@@ -27,10 +27,12 @@
 #include "cetlib/compiler_macros.h"
 #include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
+#include "opmonlib/InfoCollector.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
 
 namespace dunedaq {
 // Disable coverage collection LCOV_EXCL_START
@@ -79,7 +81,7 @@ public:
   virtual void connect_for_sends(const nlohmann::json& connection_info) = 0;
 
   virtual bool can_send() const noexcept = 0;
-
+  
   // send() will perform some universally-desirable checks before calling user-implemented send_()
   // -Throws KnownStateForbidsSend if can_send() == false
   // -Throws NullPointerPassedToSend if message is a null pointer
@@ -96,8 +98,14 @@ public:
   Sender(Sender&&) = delete;
   Sender& operator=(Sender&&) = delete;
 
+  void get_info(opmonlib::InfoCollector& ci, int /*level*/);
+
 protected:
   virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
+
+private:
+  mutable std::atomic<size_t> m_bytes;
+  mutable std::atomic<size_t> m_messages;
 };
 
 inline std::shared_ptr<Sender>
