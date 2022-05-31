@@ -11,12 +11,12 @@
 
 
 dunedaq::ipm::Receiver::Response
-dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes)
+dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes, bool noexcept_mode)
 {
   if (!can_receive()) {
     throw KnownStateForbidsReceive(ERS_HERE);
   }
-  auto message = receive_(timeout);
+  auto message = receive_(timeout, noexcept_mode);
 
   if (bytes != s_any_size) {
     auto received_size = static_cast<message_size_t>(message.data.size());

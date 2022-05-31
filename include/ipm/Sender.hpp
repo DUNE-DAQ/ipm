@@ -87,10 +87,10 @@ public:
   // -Throws NullPointerPassedToSend if message is a null pointer
   // -If message_size == 0, function is a no-op
 
-  void send(const void* message,
+  bool send(const void* message,
             message_size_t message_size,
             const duration_t& timeout,
-            std::string const& metadata = "");
+            std::string const& metadata = "", bool noexcept_mode = false);
 
   Sender(const Sender&) = delete;
   Sender& operator=(const Sender&) = delete;
@@ -101,7 +101,7 @@ public:
   void get_info(opmonlib::InfoCollector& ci, int /*level*/);
 
 protected:
-  virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
+  virtual bool send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata, bool noexcept_mode) = 0;
 
 private:
   mutable std::atomic<size_t> m_bytes = {0};

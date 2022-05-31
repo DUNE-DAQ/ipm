@@ -97,7 +97,7 @@ public:
   void unregister_callback() { m_callback_adapter.clear_callback(); }
 
 protected:
-  Receiver::Response receive_(const duration_t& timeout) override
+  Receiver::Response receive_(const duration_t& timeout, bool noexcept_mode) override
   {
     Receiver::Response output;
     zmq::message_t hdr, msg;
@@ -136,7 +136,7 @@ protected:
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
              res == 0);
 
-    if (res == 0) {
+    if (res == 0 && !noexcept_mode) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 

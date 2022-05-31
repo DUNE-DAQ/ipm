@@ -112,7 +112,7 @@ public:
   }
 
 protected:
-  void send_(const void* message, int N, const duration_t& timeout, std::string const& topic) override
+  bool send_(const void* message, int N, const duration_t& timeout, std::string const& topic, bool noexcept_mode) override
   {
     TLOG_DEBUG(10) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
@@ -139,11 +139,12 @@ protected:
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 
-    if (!res) {
+    if (!res && !noexcept_mode) {
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
     TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
+    return res;
   }
 
 private:

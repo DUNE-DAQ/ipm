@@ -48,7 +48,7 @@ public:
   }
 
 protected:
-  Receiver::Response receive_(const duration_t& /* timeout */) override
+  Receiver::Response receive_(const duration_t& /* timeout */, bool /*noexcept_mode*/) override
   {
     Receiver::Response output;
     output.data = std::vector<char>(s_bytes_on_each_receive, 'A');
