@@ -55,7 +55,7 @@ public:
   std::set<std::string> get_subscriptions() const { return m_subscriptions; }
 
 protected:
-  Receiver::Response receive_(const duration_t& /* timeout */) override
+  Receiver::Response receive_(const duration_t& /* timeout */, bool /*no_tmoexcept_mode*/) override
   {
     Receiver::Response output;
     output.data = std::vector<char>(s_bytes_on_each_receive, 'A');

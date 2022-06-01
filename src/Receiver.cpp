@@ -9,14 +9,13 @@
 #include "ipm/Receiver.hpp"
 #include "ipm/receiverinfo/InfoNljs.hpp"
 
-
 dunedaq::ipm::Receiver::Response
-dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes)
+dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes, bool no_tmoexcept_mode)
 {
   if (!can_receive()) {
     throw KnownStateForbidsReceive(ERS_HERE);
   }
-  auto message = receive_(timeout);
+  auto message = receive_(timeout, no_tmoexcept_mode);
 
   if (bytes != s_any_size) {
     auto received_size = static_cast<message_size_t>(message.data.size());
@@ -25,14 +24,15 @@ dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes)
     }
   }
 
-  m_bytes+= message.data.size();
+  m_bytes += message.data.size();
   ++m_messages;
-  
+
   return message;
 }
 
 void
-dunedaq::ipm::Receiver::get_info(opmonlib::InfoCollector& ci, int /*level*/) {
+dunedaq::ipm::Receiver::get_info(opmonlib::InfoCollector& ci, int /*level*/)
+{
 
   receiverinfo::Info i;
 

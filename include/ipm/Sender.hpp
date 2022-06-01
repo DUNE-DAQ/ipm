@@ -29,10 +29,10 @@
 #include "nlohmann/json.hpp"
 #include "opmonlib/InfoCollector.hpp"
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
-#include <atomic>
 
 namespace dunedaq {
 // Disable coverage collection LCOV_EXCL_START
@@ -81,16 +81,17 @@ public:
   virtual void connect_for_sends(const nlohmann::json& connection_info) = 0;
 
   virtual bool can_send() const noexcept = 0;
-  
+
   // send() will perform some universally-desirable checks before calling user-implemented send_()
   // -Throws KnownStateForbidsSend if can_send() == false
   // -Throws NullPointerPassedToSend if message is a null pointer
   // -If message_size == 0, function is a no-op
 
-  void send(const void* message,
+  bool send(const void* message,
             message_size_t message_size,
             const duration_t& timeout,
-            std::string const& metadata = "");
+            std::string const& metadata = "",
+            bool no_tmoexcept_mode = false);
 
   Sender(const Sender&) = delete;
   Sender& operator=(const Sender&) = delete;
@@ -101,11 +102,15 @@ public:
   void get_info(opmonlib::InfoCollector& ci, int /*level*/);
 
 protected:
-  virtual void send_(const void* message, message_size_t N, const duration_t& timeout, std::string const& metadata) = 0;
+  virtual bool send_(const void* message,
+                     message_size_t N,
+                     const duration_t& timeout,
+                     std::string const& metadata,
+                     bool no_tmoexcept_mode) = 0;
 
 private:
-  mutable std::atomic<size_t> m_bytes = {0};
-  mutable std::atomic<size_t> m_messages = {0};
+  mutable std::atomic<size_t> m_bytes = { 0 };
+  mutable std::atomic<size_t> m_messages = { 0 };
 };
 
 inline std::shared_ptr<Sender>

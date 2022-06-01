@@ -65,7 +65,6 @@ public:
         ers::warning(
           ZmqOperationError(ERS_HERE, "resolve connections", "receive", "Invalid URI detected ", conn_string, err));
       }
-
     }
     if (m_connection_strings.size() == 0) {
       throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
@@ -112,7 +111,7 @@ public:
   void unregister_callback() { m_callback_adapter.clear_callback(); }
 
 protected:
-  Receiver::Response receive_(const duration_t& timeout) override
+  Receiver::Response receive_(const duration_t& timeout, bool no_tmoexcept_mode) override
   {
     Receiver::Response output;
     zmq::message_t hdr, msg;
@@ -143,13 +142,13 @@ protected:
         TLOG_DEBUG(25) << "Subscriber: Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
-      } else if(timeout > duration_t::zero()) {
+      } else if (timeout > duration_t::zero()) {
         usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
              res == 0);
 
-    if (res == 0) {
+    if (res == 0 && !no_tmoexcept_mode) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 

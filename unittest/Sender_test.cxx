@@ -34,12 +34,14 @@ public:
   void sabotage_my_sending_ability() { m_can_send = false; }
 
 protected:
-  void send_(const void* /* message */,
+  bool send_(const void* /* message */,
              int /* N */,
              const duration_t& /* timeout */,
-             const std::string& /* metadata */) override
+             const std::string& /* metadata */,
+             bool /*no_tmoexcept_mode*/) override
   {
     // Pretty unexciting stub
+    return true;
   }
 
 private:
