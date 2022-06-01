@@ -9,7 +9,6 @@
 #include "ipm/Sender.hpp"
 #include "ipm/senderinfo/InfoNljs.hpp"
 
-
 #include <string>
 #include <vector>
 
@@ -17,7 +16,8 @@ bool
 dunedaq::ipm::Sender::send(const void* message,
                            message_size_t message_size,
                            const duration_t& timeout,
-                           std::string const& metadata, bool noexcept_mode)
+                           std::string const& metadata,
+                           bool noexcept_mode)
 {
   if (message_size == 0) {
     return true;
@@ -33,15 +33,15 @@ dunedaq::ipm::Sender::send(const void* message,
 
   auto res = send_(message, message_size, timeout, metadata, noexcept_mode);
 
-  m_bytes+= message_size;
+  m_bytes += message_size;
   ++m_messages;
 
   return res;
 }
 
-
 void
-dunedaq::ipm::Sender::get_info(opmonlib::InfoCollector& ci, int /*level*/) {
+dunedaq::ipm::Sender::get_info(opmonlib::InfoCollector& ci, int /*level*/)
+{
 
   senderinfo::Info i;
 

@@ -37,10 +37,11 @@ protected:
   bool send_(const void* /* message */,
              int /* N */,
              const duration_t& /* timeout */,
-             const std::string& /* metadata */, bool /*noexcept_mode*/) override
+             const std::string& /* metadata */,
+             bool /*noexcept_mode*/) override
   {
     // Pretty unexciting stub
-      return true;
+    return true;
   }
 
 private:

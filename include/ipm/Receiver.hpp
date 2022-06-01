@@ -29,10 +29,10 @@
 #include "nlohmann/json.hpp"
 #include "opmonlib/InfoCollector.hpp"
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
-#include <atomic>
 
 namespace dunedaq {
 // Disable coverage collection LCOV_EXCL_START
@@ -114,8 +114,8 @@ protected:
   virtual Response receive_(const duration_t& timeout, bool noexcept_mode) = 0;
 
 private:
-  mutable std::atomic<size_t> m_bytes = {0};
-  mutable std::atomic<size_t> m_messages ={0};
+  mutable std::atomic<size_t> m_bytes = { 0 };
+  mutable std::atomic<size_t> m_messages = { 0 };
 };
 
 inline std::shared_ptr<Receiver>

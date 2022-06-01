@@ -112,7 +112,11 @@ public:
   }
 
 protected:
-  bool send_(const void* message, int N, const duration_t& timeout, std::string const& topic, bool noexcept_mode) override
+  bool send_(const void* message,
+             int N,
+             const duration_t& timeout,
+             std::string const& topic,
+             bool noexcept_mode) override
   {
     TLOG_DEBUG(10) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();

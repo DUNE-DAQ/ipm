@@ -65,7 +65,6 @@ public:
         ers::warning(
           ZmqOperationError(ERS_HERE, "resolve connections", "receive", "Invalid URI detected ", conn_string, err));
       }
-
     }
     if (m_connection_strings.size() == 0) {
       throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
