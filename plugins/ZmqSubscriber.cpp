@@ -72,7 +72,7 @@ public:
 
     TLOG() << "Setting socket options";
     try {
-      m_socket.setsockopt(ZMQ_RCVTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
+      m_socket.setsockopt(ZMQ_RCVTIMEO, 0); // Return immediately if we can't receive
     } catch (zmq::error_t const& err) {
       throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), m_connection_strings[0]);
     }
@@ -142,7 +142,7 @@ protected:
         TLOG_DEBUG(25) << "Subscriber: Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
-      } else {
+      } else if(timeout > duration_t::zero()) {
         usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
