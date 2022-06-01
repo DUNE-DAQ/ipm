@@ -38,7 +38,7 @@ protected:
              int /* N */,
              const duration_t& /* timeout */,
              const std::string& /* metadata */,
-             bool /*noexcept_mode*/) override
+             bool /*no_tmoexcept_mode*/) override
   {
     // Pretty unexciting stub
     return true;

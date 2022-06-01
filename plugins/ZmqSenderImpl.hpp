@@ -116,7 +116,7 @@ protected:
              int N,
              const duration_t& timeout,
              std::string const& topic,
-             bool noexcept_mode) override
+             bool no_tmoexcept_mode) override
   {
     TLOG_DEBUG(10) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
@@ -147,7 +147,7 @@ protected:
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 
-    if (!res && !noexcept_mode) {
+    if (!res && !no_tmoexcept_mode) {
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 

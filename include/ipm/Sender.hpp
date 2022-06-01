@@ -91,7 +91,7 @@ public:
             message_size_t message_size,
             const duration_t& timeout,
             std::string const& metadata = "",
-            bool noexcept_mode = false);
+            bool no_tmoexcept_mode = false);
 
   Sender(const Sender&) = delete;
   Sender& operator=(const Sender&) = delete;
@@ -106,7 +106,7 @@ protected:
                      message_size_t N,
                      const duration_t& timeout,
                      std::string const& metadata,
-                     bool noexcept_mode) = 0;
+                     bool no_tmoexcept_mode) = 0;
 
 private:
   mutable std::atomic<size_t> m_bytes = { 0 };

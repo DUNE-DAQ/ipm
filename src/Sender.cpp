@@ -17,7 +17,7 @@ dunedaq::ipm::Sender::send(const void* message,
                            message_size_t message_size,
                            const duration_t& timeout,
                            std::string const& metadata,
-                           bool noexcept_mode)
+                           bool no_tmoexcept_mode)
 {
   if (message_size == 0) {
     return true;
@@ -31,7 +31,7 @@ dunedaq::ipm::Sender::send(const void* message,
     throw NullPointerPassedToSend(ERS_HERE);
   }
 
-  auto res = send_(message, message_size, timeout, metadata, noexcept_mode);
+  auto res = send_(message, message_size, timeout, metadata, no_tmoexcept_mode);
 
   m_bytes += message_size;
   ++m_messages;
