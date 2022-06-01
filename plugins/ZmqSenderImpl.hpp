@@ -59,7 +59,7 @@ public:
   void connect_for_sends(const nlohmann::json& connection_info)
   {
     try {
-      m_socket.setsockopt(ZMQ_SNDTIMEO, 1); // 1 ms, we'll repeat until we reach timeout
+      m_socket.setsockopt(ZMQ_SNDTIMEO, 0); // Return immediately if we can't send
     } catch (zmq::error_t const& err) {
       throw ZmqOperationError(ERS_HERE,
                               "set timeout",
@@ -136,6 +136,10 @@ protected:
         res = m_socket.send(msg);
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, err.what(), N, topic);
+      }
+
+      if (!res && timeout > duration_t::zero()) {
+          usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 
