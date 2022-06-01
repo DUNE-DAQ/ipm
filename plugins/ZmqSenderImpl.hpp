@@ -143,7 +143,7 @@ protected:
       }
 
       if (!res && timeout > duration_t::zero()) {
-          usleep(1000);
+        usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 

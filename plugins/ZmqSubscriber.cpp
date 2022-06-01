@@ -142,7 +142,7 @@ protected:
         TLOG_DEBUG(25) << "Subscriber: Recv res=" << res << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
-      } else if(timeout > duration_t::zero()) {
+      } else if (timeout > duration_t::zero()) {
         usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
