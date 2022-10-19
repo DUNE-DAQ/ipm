@@ -27,9 +27,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: "dunedaq/sl7-minimal:spack-dev"
+          - image: "dunedaq/sl7-minimal:spack-dev-gcc12"
             os_name: "c7"
-          - image: "dunedaq/c8-minimal:spack-dev"
+          - image: "dunedaq/c8-minimal:spack-dev-gcc12"
             os_name: "c8"
     container:
       image: ${{ matrix.image }}
@@ -49,7 +49,7 @@ jobs:
         
     - name: setup dev area
       run: |
-          source /cvmfs/dunedaq.opensciencegrid.org/tools/dbt/latest-gcc8/env.sh
+          source /cvmfs/dunedaq.opensciencegrid.org/tools/dbt/latest/env.sh
           release_path=$(readlink -f /cvmfs/dunedaq-development.opensciencegrid.org/spack-nightly/last_successful)
           release_name=`basename $release_path`
           dbt-create -c -n ${release_name} dev-${{ matrix.os_name }}
