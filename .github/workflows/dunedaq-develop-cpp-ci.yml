@@ -49,9 +49,9 @@ jobs:
         
     - name: setup dev area
       run: |
-          source /cvmfs/dunedaq.opensciencegrid.org/tools/dbt/latest/env.sh
-          release_path=$(readlink -f /cvmfs/dunedaq-development.opensciencegrid.org/spack-nightly/last_successful)
-          release_name=`basename $release_path`
+          source /cvmfs/dunedaq.opensciencegrid.org/setup_dunedaq.sh
+          setup_dbt latest|| true
+          dbt-setup-release -n last_successful
           dbt-create -c -n ${release_name} dev-${{ matrix.os_name }}
           
     - name: checkout package for CI
