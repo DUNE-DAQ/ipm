@@ -55,11 +55,16 @@ public:
     for (auto& conn_string : connection_info.value<std::vector<std::string>>("connection_strings", {})) {
       connection_strings.push_back(conn_string);
     }
+
+    std::vector<std::string> new_connection_strings;
     for (auto& conn_string : connection_strings) {
       try {
         auto resolved = utilities::resolve_uri_hostname(conn_string);
         for (auto& res : resolved) {
-          m_connection_strings.push_back(res);
+          if (!m_connection_strings.count(res)) {
+            m_connection_strings.insert(res);
+            new_connection_strings.push_back(res);
+          }
         }
       } catch (utilities::InvalidUri const& err) {
         ers::warning(
@@ -70,15 +75,17 @@ public:
       throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
     }
 
-    TLOG() << "Setting socket options";
-    try {
-      m_socket.setsockopt(ZMQ_RCVTIMEO, 0); // Return immediately if we can't receive
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), m_connection_strings[0]);
-    }
-    for (auto& conn_string : m_connection_strings) {
+    if (!m_socket_connected) {
+      TLOG() << "Setting socket options";
       try {
-        TLOG() << "Connecting to publisher at " << conn_string;
+        m_socket.setsockopt(ZMQ_RCVTIMEO, 0); // Return immediately if we can't receive
+      } catch (zmq::error_t const& err) {
+        throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), *m_connection_strings.begin());
+      }
+    }
+    for (auto& conn_string : new_connection_strings) {
+      try {
+          TLOG() << "Connecting to publisher at " << conn_string;
         m_socket.connect(conn_string);
       } catch (zmq::error_t const& err) {
         ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
@@ -159,7 +166,7 @@ protected:
 
 private:
   zmq::socket_t m_socket;
-  std::vector<std::string> m_connection_strings;
+  std::set<std::string> m_connection_strings;
   bool m_socket_connected{ false };
   CallbackAdapter m_callback_adapter;
 };
