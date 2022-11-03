@@ -78,7 +78,7 @@ public:
   Sender() = default;
   virtual ~Sender() = default;
 
-  virtual void connect_for_sends(const nlohmann::json& connection_info) = 0;
+  virtual std::string connect_for_sends(const nlohmann::json& connection_info) = 0;
 
   virtual bool can_send() const noexcept = 0;
 

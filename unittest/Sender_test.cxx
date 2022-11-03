@@ -29,7 +29,11 @@ public:
     : m_can_send(false)
   {}
 
-  void connect_for_sends(const nlohmann::json& /* connection_info */) { m_can_send = true; }
+  std::string connect_for_sends(const nlohmann::json& /* connection_info */)
+  {
+    m_can_send = true;
+    return "";
+  }
   bool can_send() const noexcept override { return m_can_send; }
   void sabotage_my_sending_ability() { m_can_send = false; }
 

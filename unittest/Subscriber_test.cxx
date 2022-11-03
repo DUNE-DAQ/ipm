@@ -34,10 +34,11 @@ public:
     , m_subscriptions()
   {}
 
-  void connect_for_receives(const nlohmann::json& /* connection_info */)
+  std::string connect_for_receives(const nlohmann::json& /* connection_info */)
   {
     m_can_receive = true;
     m_callback_adapter.set_receiver(this);
+    return "";
   }
   bool can_receive() const noexcept override { return m_can_receive; }
   void sabotage_my_receiving_ability()

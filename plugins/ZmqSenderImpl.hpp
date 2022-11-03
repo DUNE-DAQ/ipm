@@ -56,7 +56,7 @@ public:
   }
 
   bool can_send() const noexcept override { return m_socket_connected; }
-  void connect_for_sends(const nlohmann::json& connection_info)
+  std::string connect_for_sends(const nlohmann::json& connection_info)
   {
     try {
       m_socket.setsockopt(ZMQ_SNDTIMEO, 0); // Return immediately if we can't send
@@ -97,7 +97,7 @@ public:
         } else {
           m_socket.bind(connection_string);
         }
-        m_connection_string = connection_string;
+        m_connection_string = m_socket.get(zmq::sockopt::last_endpoint);
         m_socket_connected = true;
         break;
       } catch (zmq::error_t const& err) {
@@ -109,6 +109,7 @@ public:
       auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
       throw ZmqOperationError(ERS_HERE, operation, "send", "Operation failed for all resolved connection strings", "");
     }
+    return m_connection_string;
   }
 
 protected:

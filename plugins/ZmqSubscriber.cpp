@@ -45,7 +45,7 @@ public:
     m_socket.close();
   }
 
-  void connect_for_receives(const nlohmann::json& connection_info) override
+  std::string connect_for_receives(const nlohmann::json& connection_info) override
   {
     std::vector<std::string> connection_strings;
     if (connection_info.contains("connection_string")) {
@@ -93,6 +93,8 @@ public:
     }
     m_socket_connected = true;
     m_callback_adapter.set_receiver(this);
+
+    return *m_connection_strings.begin();
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
