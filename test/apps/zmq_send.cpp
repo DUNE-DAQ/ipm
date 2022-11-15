@@ -18,7 +18,13 @@ int main(int argc, char* argv[]){
   if (argc>3) {
     conString=std::string(argv[3]);
   }
+  int nthreads=1;
+  if (argc>4) {
+    nthreads=atol(argv[4]);
+  }
 
+  zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();
+  zmq_ctx_set(context, ZMQ_IO_THREADS, nthreads);
   std::shared_ptr<dunedaq::ipm::Sender> sender=dunedaq::ipm::make_ipm_sender("ZmqSender");
   sender->connect_for_sends({ {"connection_string", conString} });
 
@@ -32,7 +38,7 @@ int main(int argc, char* argv[]){
 
   auto elapsed=std::chrono::steady_clock::now()-start;
   auto nano=std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
-  float bw=(float)(packetSize*npackets)/nano;
+  float bw=((float)packetSize*npackets)/nano;
   std::cout << "Sent " << packetSize*npackets << " bytes in "
                 << nano << " ns " << bw << " GB/s" << std::endl;
   

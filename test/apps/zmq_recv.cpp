@@ -8,12 +8,19 @@ using namespace dunedaq::ipm;
 int main(int argc, char* argv[]){
   std::string conString="tcp://127.0.0.1:12345";
   int npackets=1;
+  int nthreads=1;
   if (argc>1) {
     npackets=atol(argv[1]);
   }
   if (argc>2) {
     conString=std::string(argv[2]);
   }
+  if (argc>3) {
+    nthreads=atol(argv[3]);
+  }
+
+  zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();
+  zmq_ctx_set(context, ZMQ_IO_THREADS, nthreads);
 
   // Receiver side
   std::shared_ptr<Receiver> receiver=make_ipm_receiver("ZmqReceiver");
