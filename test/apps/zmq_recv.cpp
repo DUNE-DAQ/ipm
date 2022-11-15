@@ -1,6 +1,8 @@
 #include "ipm/Receiver.hpp"
 #include "ipm/ZmqContext.hpp"
 
+#include "boost/program_options.hpp"
+
 #include <memory>
 #include <chrono>
 using namespace dunedaq::ipm;
@@ -9,14 +11,21 @@ int main(int argc, char* argv[]){
   std::string conString="tcp://127.0.0.1:12345";
   int npackets=1;
   int nthreads=1;
-  if (argc>1) {
-    npackets=atol(argv[1]);
-  }
-  if (argc>2) {
-    conString=std::string(argv[2]);
-  }
-  if (argc>3) {
-    nthreads=atol(argv[3]);
+
+  namespace po = boost::program_options;
+  po::options_description desc("Simple test program for ZmqReceiver");
+  desc.add_options()(
+    "connection,c", po::value<std::string>(&conString), "Connection to listen on")(
+    "threads,t", po::value<int>(&nthreads), "Number of ZMQ threads")(
+    "packets,p", po::value<int>(&npackets), "Number of packets per group for reporting");
+  try {
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+  } catch (std::exception& ex) {
+    std::cerr << "Error parsing command line " << ex.what() << std::endl;
+    std::cerr << desc << std::endl;
+    return 0;
   }
 
   zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();

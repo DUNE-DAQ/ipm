@@ -1,27 +1,35 @@
 #include "ipm/Sender.hpp"
 #include "ipm/ZmqContext.hpp"
 
+#include "boost/program_options.hpp"
+
 #include <memory>
 #include <chrono>
 #include <cstdlib>
 
 int main(int argc, char* argv[]){
   int npackets=1;
-  if (argc>1) {
-    npackets=atol(argv[1]);
-  }
   int packetSize=100;
-  if (argc>2) {
-    packetSize=atol(argv[2]);
-  }
   std::string conString="tcp://127.0.0.1:12345";
-  if (argc>3) {
-    conString=std::string(argv[3]);
-  }
   int nthreads=1;
-  if (argc>4) {
-    nthreads=atol(argv[4]);
+
+  namespace po = boost::program_options;
+  po::options_description desc("Simple test program for ZmqSender");
+  desc.add_options()(
+    "connection,c", po::value<std::string>(&conString), "Connection to listen on")(
+    "threads,t", po::value<int>(&nthreads), "Number of ZMQ threads")(
+    "packets,p", po::value<int>(&npackets), "Number of packets to send")(
+    "packetSize,s", po::value<int>(&packetSize), "Number of bytes per packet");
+  try {
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+  } catch (std::exception& ex) {
+    std::cerr << "Error parsing command line " << ex.what() << std::endl;
+    std::cerr << desc << std::endl;
+    return 0;
   }
+
 
   zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();
   zmq_ctx_set(context, ZMQ_IO_THREADS, nthreads);
