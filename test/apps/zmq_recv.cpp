@@ -28,8 +28,9 @@ int main(int argc, char* argv[]){
     return 0;
   }
 
-  zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();
-  zmq_ctx_set(context, ZMQ_IO_THREADS, nthreads);
+
+  zmq::context_t& context=dunedaq::ipm::ZmqContext::instance().GetContext();
+  context.set(zmq::ctxopt::io_threads, nthreads);
 
   // Receiver side
   std::shared_ptr<Receiver> receiver=make_ipm_receiver("ZmqReceiver");

@@ -6,6 +6,7 @@
 #include <memory>
 #include <chrono>
 #include <cstdlib>
+#include <cerrno>
 
 int main(int argc, char* argv[]){
   int npackets=1;
@@ -31,8 +32,9 @@ int main(int argc, char* argv[]){
   }
 
 
-  zmq::context_t* context=&dunedaq::ipm::ZmqContext::instance().GetContext();
-  zmq_ctx_set(context, ZMQ_IO_THREADS, nthreads);
+  zmq::context_t& context=dunedaq::ipm::ZmqContext::instance().GetContext();
+  context.set(zmq::ctxopt::io_threads, nthreads);
+ 
   std::shared_ptr<dunedaq::ipm::Sender> sender=dunedaq::ipm::make_ipm_sender("ZmqSender");
   sender->connect_for_sends({ {"connection_string", conString} });
 
