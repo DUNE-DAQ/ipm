@@ -44,7 +44,7 @@ public:
   std::string connect_for_receives(const nlohmann::json& connection_info) override
   {
     try {
-      m_socket.setsockopt(ZMQ_RCVTIMEO, 0); // Return immediately if we can't receive
+      m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
     } catch (zmq::error_t const& err) {
       throw ZmqOperationError(ERS_HERE,
                               "set timeout",
@@ -103,20 +103,20 @@ protected:
   {
     Receiver::Response output;
     zmq::message_t hdr, msg;
-    size_t res = 0;
+    zmq::recv_result_t res{};
 
     auto start_time = std::chrono::steady_clock::now();
     do {
 
       try {
         TLOG_DEBUG(20) << "Endpoint " << m_connection_string << ": Going to receive header";
-        res = m_socket.recv(&hdr);
-        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res
+        res = m_socket.recv(hdr);
+        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
                        << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
-      if (res > 0 || hdr.more()) {
+      if (res || hdr.more()) {
         TLOG_DEBUG(20) << "Endpoint " << m_connection_string << ": Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
@@ -124,11 +124,11 @@ protected:
         // ZMQ guarantees that the entire message has arrived
 
         try {
-          res = m_socket.recv(&msg);
+          res = m_socket.recv(msg);
         } catch (zmq::error_t const& err) {
           throw ZmqReceiveError(ERS_HERE, err.what(), "data");
         }
-        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res
+        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
                        << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
@@ -136,9 +136,9 @@ protected:
         usleep(1000);
       }
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout &&
-             res == 0);
+             res.value_or(0) == 0);
 
-    if (res == 0 && !no_tmoexcept_mode) {
+    if (res.value_or(0) == 0 && !no_tmoexcept_mode) {
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
