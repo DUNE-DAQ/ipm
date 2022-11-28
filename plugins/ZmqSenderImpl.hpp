@@ -59,7 +59,7 @@ public:
   void connect_for_sends(const nlohmann::json& connection_info)
   {
     try {
-      m_socket.setsockopt(ZMQ_SNDTIMEO, 0); // Return immediately if we can't send
+      m_socket.set(zmq::sockopt::sndtimeo, 0); // Return immediately if we can't send
     } catch (zmq::error_t const& err) {
       throw ZmqOperationError(ERS_HERE,
                               "set timeout",
@@ -120,17 +120,17 @@ protected:
   {
     TLOG_DEBUG(10) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
-    bool res = false;
+    zmq::send_result_t res{};
     do {
 
       zmq::message_t topic_msg(topic.c_str(), topic.size());
       try {
-        res = m_socket.send(topic_msg, ZMQ_SNDMORE);
+        res = m_socket.send(topic_msg, zmq::send_flags::sndmore);
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, err.what(), topic.size(), topic);
       }
 
-      if (!res) {
+      if (!res || res != topic.size()) {
         TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Unable to send message";
         continue;
       }
@@ -152,7 +152,7 @@ protected:
     }
 
     TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
-    return res;
+    return res && res == N;
   }
 
 private:
