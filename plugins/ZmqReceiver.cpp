@@ -15,6 +15,7 @@
 #include "utilities/Resolver.hpp"
 
 #include <string>
+#include <vector>
 
 namespace dunedaq {
 namespace ipm {

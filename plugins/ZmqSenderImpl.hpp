@@ -18,6 +18,7 @@
 #include "zmq.hpp"
 
 #include <string>
+#include <vector>
 
 namespace dunedaq {
 namespace ipm {
@@ -138,7 +139,7 @@ protected:
 
       zmq::message_t msg(message, N);
       try {
-        res = m_socket.send(msg);
+        res = m_socket.send(msg, zmq::send_flags::none);
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, err.what(), N, topic);
       }

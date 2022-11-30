@@ -103,7 +103,7 @@ public:
   void subscribe(std::string const& topic) override
   {
     try {
-      m_socket.setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), topic.size());
+      m_socket.set(zmq::sockopt::subscribe, topic);
     } catch (zmq::error_t const& err) {
       throw ZmqSubscribeError(ERS_HERE, err.what(), topic);
     }
@@ -111,7 +111,7 @@ public:
   void unsubscribe(std::string const& topic) override
   {
     try {
-      m_socket.setsockopt(ZMQ_UNSUBSCRIBE, topic.c_str(), topic.size());
+      m_socket.set(zmq::sockopt::unsubscribe, topic);
     } catch (zmq::error_t const& err) {
       throw ZmqUnsubscribeError(ERS_HERE, err.what(), topic);
     }
