@@ -15,6 +15,7 @@
 #include "utilities/Resolver.hpp"
 
 #include <string>
+#include <vector>
 
 namespace dunedaq {
 namespace ipm {
@@ -41,7 +42,7 @@ public:
     m_socket.close();
   }
 
-  void connect_for_receives(const nlohmann::json& connection_info) override
+  std::string connect_for_receives(const nlohmann::json& connection_info) override
   {
     try {
       m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
@@ -77,7 +78,7 @@ public:
       TLOG() << "Connection String is " << connection_string;
       try {
         m_socket.bind(connection_string);
-        m_connection_string = connection_string;
+        m_connection_string = m_socket.get(zmq::sockopt::last_endpoint);
         m_socket_connected = true;
         break;
       } catch (zmq::error_t const& err) {
@@ -89,6 +90,8 @@ public:
     }
 
     m_callback_adapter.set_receiver(this);
+
+    return m_connection_string;
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }

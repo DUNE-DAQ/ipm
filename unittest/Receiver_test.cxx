@@ -35,10 +35,11 @@ public:
   void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
   void unregister_callback() { m_callback_adapter.clear_callback(); }
 
-  void connect_for_receives(const nlohmann::json& /* connection_info */)
+  std::string connect_for_receives(const nlohmann::json& /* connection_info */)
   {
     m_can_receive = true;
     m_callback_adapter.set_receiver(this);
+    return "";
   }
   bool can_receive() const noexcept override { return m_can_receive; }
   void sabotage_my_receiving_ability()
