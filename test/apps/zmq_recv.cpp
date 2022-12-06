@@ -11,13 +11,15 @@ int main(int argc, char* argv[]){
   std::string conString="tcp://127.0.0.1:12345";
   int npackets=1;
   int nthreads=1;
+  int timeout = 10;
 
   namespace po = boost::program_options;
   po::options_description desc("Simple test program for ZmqReceiver");
   desc.add_options()(
     "connection,c", po::value<std::string>(&conString), "Connection to listen on")(
     "threads,t", po::value<int>(&nthreads), "Number of ZMQ threads")(
-    "packets,p", po::value<int>(&npackets), "Number of packets per group for reporting");
+    "packets,p", po::value<int>(&npackets), "Number of packets per group for reporting")(
+    "timeout,o", po::value<int>(&timeout), "Timeout, in seconds");
   try {
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -28,9 +30,10 @@ int main(int argc, char* argv[]){
     return 0;
   }
 
-
-  zmq::context_t& context=dunedaq::ipm::ZmqContext::instance().GetContext();
-  context.set(zmq::ctxopt::io_threads, nthreads);
+  if (nthreads > 1) {
+    zmq::context_t& context = dunedaq::ipm::ZmqContext::instance().GetContext();
+    context.set(zmq::ctxopt::io_threads, nthreads);
+  }
 
   // Receiver side
   std::shared_ptr<Receiver> receiver=make_ipm_receiver("ZmqReceiver");
@@ -42,7 +45,7 @@ int main(int argc, char* argv[]){
       auto start=std::chrono::steady_clock::now();
       float bytesReceived=0;
       for (int p=0;p<npackets;p++) {
-        Receiver::Response resp=receiver->receive(std::chrono::seconds(10));
+        Receiver::Response resp=receiver->receive(std::chrono::seconds(timeout));
         bytesReceived+=resp.data.size();
       }
       auto elapsed=std::chrono::steady_clock::now()-start;
