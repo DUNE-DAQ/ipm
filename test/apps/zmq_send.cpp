@@ -31,9 +31,9 @@ int main(int argc, char* argv[]){
     return 0;
   }
 
-
-  zmq::context_t& context=dunedaq::ipm::ZmqContext::instance().GetContext();
-  context.set(zmq::ctxopt::io_threads, nthreads);
+  if (nthreads > 1) {
+    dunedaq::ipm::ZmqContext::instance().set_context_threads(nthreads);
+  }
  
   std::shared_ptr<dunedaq::ipm::Sender> sender=dunedaq::ipm::make_ipm_sender("ZmqSender");
   sender->connect_for_sends({ {"connection_string", conString} });

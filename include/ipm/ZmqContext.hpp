@@ -92,8 +92,19 @@ public:
 
   zmq::context_t& GetContext() { return m_context; }
 
+  void set_context_threads(int nthreads) { m_context.set(zmq::ctxopt::io_threads, nthreads); }
+
 private:
-  ZmqContext() {}
+  ZmqContext()
+  {
+    auto threads_c = getenv("IPM_ZMQ_IO_THREADS");
+    if (threads_c != nullptr) {
+      auto threads = std::atoi(threads_c);
+      if (threads > 1) {
+        set_context_threads(threads);
+      }
+    }
+  }
   ~ZmqContext() { m_context.close(); }
   zmq::context_t m_context;
 
