@@ -31,8 +31,7 @@ int main(int argc, char* argv[]){
   }
 
   if (nthreads > 1) {
-    zmq::context_t& context = dunedaq::ipm::ZmqContext::instance().GetContext();
-    context.set(zmq::ctxopt::io_threads, nthreads);
+    dunedaq::ipm::ZmqContext::instance().set_context_threads(nthreads);
   }
 
   // Receiver side
