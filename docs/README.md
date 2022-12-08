@@ -54,3 +54,7 @@ Receiver::Response response=subscriber->receive(std::chrono::milliseconds(10));
 
 More complete examples can be found in the `test/plugins` directory.
 
+
+### API Diagram
+
+![Class Diagrams](https://github.com/DUNE-DAQ/ipm/raw/develop/docs/ipm.png)
