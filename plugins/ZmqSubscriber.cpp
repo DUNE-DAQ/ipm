@@ -86,7 +86,7 @@ public:
     }
     for (auto& conn_string : new_connection_strings) {
       try {
-          TLOG() << "Connecting to publisher at " << conn_string;
+        TLOG() << "Connecting to publisher at " << conn_string;
         m_socket.connect(conn_string);
       } catch (zmq::error_t const& err) {
         ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));

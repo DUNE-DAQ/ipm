@@ -18,7 +18,8 @@ class ZmqPublisher : public ZmqSenderImpl
 public:
   ZmqPublisher()
     : ZmqSenderImpl(ZmqSenderImpl::SenderType::Publisher)
-  {}
+  {
+  }
 };
 
 } // namespace ipm

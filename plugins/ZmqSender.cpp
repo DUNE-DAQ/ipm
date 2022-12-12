@@ -18,7 +18,8 @@ class ZmqSender : public ZmqSenderImpl
 public:
   ZmqSender()
     : ZmqSenderImpl(ZmqSenderImpl::SenderType::Push)
-  {}
+  {
+  }
 };
 
 } // namespace ipm
