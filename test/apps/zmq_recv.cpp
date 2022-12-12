@@ -3,21 +3,20 @@
 
 #include "boost/program_options.hpp"
 
-#include <chrono>
 #include <memory>
+#include <chrono>
 using namespace dunedaq::ipm;
 
-int
-main(int argc, char* argv[])
-{
-  std::string conString = "tcp://127.0.0.1:12345";
-  int npackets = 1;
-  int nthreads = 1;
+int main(int argc, char* argv[]){
+  std::string conString="tcp://127.0.0.1:12345";
+  int npackets=1;
+  int nthreads=1;
   int timeout = 10;
 
   namespace po = boost::program_options;
   po::options_description desc("Simple test program for ZmqReceiver");
-  desc.add_options()("connection,c", po::value<std::string>(&conString), "Connection to listen on")(
+  desc.add_options()(
+    "connection,c", po::value<std::string>(&conString), "Connection to listen on")(
     "threads,t", po::value<int>(&nthreads), "Number of ZMQ threads")(
     "packets,p", po::value<int>(&npackets), "Number of packets per group for reporting")(
     "timeout,o", po::value<int>(&timeout), "Timeout, in seconds");
@@ -36,28 +35,30 @@ main(int argc, char* argv[])
   }
 
   // Receiver side
-  std::shared_ptr<Receiver> receiver = make_ipm_receiver("ZmqReceiver");
-  receiver->connect_for_receives({ { "connection_string", conString } });
+  std::shared_ptr<Receiver> receiver=make_ipm_receiver("ZmqReceiver");
+  receiver->connect_for_receives({ {"connection_string", conString} });
 
   try {
     while (true) {
       // Last arg is receive timeout
-      auto start = std::chrono::steady_clock::now();
-      float bytesReceived = 0;
-      for (int p = 0; p < npackets; p++) {
-        Receiver::Response resp = receiver->receive(std::chrono::seconds(timeout));
-        bytesReceived += resp.data.size();
+      auto start=std::chrono::steady_clock::now();
+      float bytesReceived=0;
+      for (int p=0;p<npackets;p++) {
+        Receiver::Response resp=receiver->receive(std::chrono::seconds(timeout));
+        bytesReceived+=resp.data.size();
       }
-      auto elapsed = std::chrono::steady_clock::now() - start;
-      auto nano = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
-      float bw = bytesReceived / nano;
-      std::cout << "Received " << bytesReceived << " bytes in " << nano << " ns " << bw << " GB/s" << std::endl;
+      auto elapsed=std::chrono::steady_clock::now()-start;
+      auto nano=std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
+      float bw=bytesReceived/nano;
+      std::cout << "Received " << bytesReceived << " bytes in "
+                << nano << " ns " << bw << " GB/s" << std::endl;
       // std::cout << "resp.data=";
       // for (auto d: resp.data) {
       //   std::cout << d << std::endl;
       // }
     }
-  } catch (ReceiveTimeoutExpired const& exc) {
+  }
+  catch(ReceiveTimeoutExpired const& exc) {
     std::cout << "Gave up waiting\n";
   }
 }

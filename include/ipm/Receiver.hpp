@@ -62,10 +62,7 @@ ERS_DECLARE_ISSUE(ipm,
 // NOLINTNEXTLINE(build/define_used)
 #define DEFINE_DUNE_IPM_RECEIVER(klass)                                                                                \
   EXTERN_C_FUNC_DECLARE_START                                                                                          \
-  std::shared_ptr<dunedaq::ipm::Receiver> make()                                                                       \
-  {                                                                                                                    \
-    return std::shared_ptr<dunedaq::ipm::Receiver>(new klass());                                                       \
-  }                                                                                                                    \
+  std::shared_ptr<dunedaq::ipm::Receiver> make() { return std::shared_ptr<dunedaq::ipm::Receiver>(new klass()); }      \
   }
 
 namespace dunedaq::ipm {
