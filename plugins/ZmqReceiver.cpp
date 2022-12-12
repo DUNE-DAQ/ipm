@@ -25,7 +25,8 @@ class ZmqReceiver : public Receiver
 public:
   ZmqReceiver()
     : m_socket(ZmqContext::instance().GetContext(), zmq::socket_type::pull)
-  {}
+  {
+  }
 
   ~ZmqReceiver()
   {

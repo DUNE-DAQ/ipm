@@ -30,7 +30,8 @@ public:
 
   ReceiverImpl()
     : m_can_receive(false)
-  {}
+  {
+  }
 
   void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
   void unregister_callback() { m_callback_adapter.clear_callback(); }
