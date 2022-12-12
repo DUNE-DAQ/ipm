@@ -27,8 +27,7 @@ class SenderImpl : public Sender
 public:
   SenderImpl()
     : m_can_send(false)
-  {
-  }
+  {}
 
   std::string connect_for_sends(const nlohmann::json& /* connection_info */)
   {

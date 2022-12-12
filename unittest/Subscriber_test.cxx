@@ -32,8 +32,7 @@ public:
   SubscriberImpl()
     : m_can_receive(false)
     , m_subscriptions()
-  {
-  }
+  {}
 
   std::string connect_for_receives(const nlohmann::json& /* connection_info */)
   {

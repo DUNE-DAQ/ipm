@@ -35,8 +35,7 @@ public:
     : m_socket(ZmqContext::instance().GetContext(),
                type == SenderType::Push ? zmq::socket_type::push : zmq::socket_type::pub)
     , m_sender_type(type)
-  {
-  }
+  {}
 
   ~ZmqSenderImpl()
   {
