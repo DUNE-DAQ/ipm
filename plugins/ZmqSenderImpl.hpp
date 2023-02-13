@@ -105,18 +105,6 @@ public:
                                     connection_info.value<std::string>("connection_string", "inproc://default"));
           }
 
-          try {
-            m_socket.set(zmq::sockopt::heartbeat_ivl, 1000);
-            m_socket.set(zmq::sockopt::heartbeat_timeout, 3000);
-            m_socket.set(zmq::sockopt::heartbeat_ttl, 1000);
-          } catch (zmq::error_t const& err) {
-            throw ZmqOperationError(ERS_HERE,
-                                    "set heartbeat",
-                                    "send",
-                                    err.what(),
-                                    connection_info.value<std::string>("connection_string", "inproc://default"));
-          }
-
           m_socket.connect(connection_string);
         } else {
           m_socket.bind(connection_string);
