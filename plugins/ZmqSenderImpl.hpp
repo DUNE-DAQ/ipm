@@ -35,7 +35,8 @@ public:
     : m_socket(ZmqContext::instance().GetContext(),
                type == SenderType::Push ? zmq::socket_type::push : zmq::socket_type::pub)
     , m_sender_type(type)
-  {}
+  {
+  }
 
   ~ZmqSenderImpl()
   {
@@ -69,17 +70,6 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
-    try{
-      m_socket.set(zmq::sockopt::heartbeat_ivl, 1000);
-      m_socket.set(zmq::sockopt::heartbeat_timeout, 3000);
-    }catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE,
-                              "set heartbeat",
-                              "send",
-                              err.what(),
-                              connection_info.value<std::string>("connection_string", "inproc://default"));
-    }
-
     std::vector<std::string> resolved;
     try {
 
@@ -105,6 +95,28 @@ public:
       TLOG() << "Connection String is " << connection_string;
       try {
         if (m_sender_type == SenderType::Push) {
+          try {
+            m_socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
+          } catch (zmq::error_t const& err) {
+            throw ZmqOperationError(ERS_HERE,
+                                    "set immediate mode",
+                                    "send",
+                                    err.what(),
+                                    connection_info.value<std::string>("connection_string", "inproc://default"));
+          }
+
+          try {
+            m_socket.set(zmq::sockopt::heartbeat_ivl, 1000);
+            m_socket.set(zmq::sockopt::heartbeat_timeout, 3000);
+            m_socket.set(zmq::sockopt::heartbeat_ttl, 1000);
+          } catch (zmq::error_t const& err) {
+            throw ZmqOperationError(ERS_HERE,
+                                    "set heartbeat",
+                                    "send",
+                                    err.what(),
+                                    connection_info.value<std::string>("connection_string", "inproc://default"));
+          }
+
           m_socket.connect(connection_string);
         } else {
           m_socket.bind(connection_string);
