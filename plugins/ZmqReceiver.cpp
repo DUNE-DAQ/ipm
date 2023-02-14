@@ -54,6 +54,16 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
+    try {
+      m_socket.set(zmq::sockopt::linger, 0); // Close connection immediately when close is called
+    } catch (zmq::error_t const& err) {
+      throw ZmqOperationError(ERS_HERE,
+                              "set linger",
+                              "receive",
+                              err.what(),
+                              connection_info.value<std::string>("connection_string", "inproc://default"));
+    }
+
     std::vector<std::string> resolved;
     try {
       resolved =
