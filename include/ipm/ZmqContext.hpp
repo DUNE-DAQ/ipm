@@ -110,17 +110,24 @@ private:
         set_context_threads(threads);
       }
     }
+
+    bool sockets_set = false;
     auto sockets_c = getenv("IPM_ZMQ_MAX_SOCKETS");
     if (sockets_c != nullptr) {
       auto sockets = std::atoi(sockets_c);
-      if (sockets > 1024) {
+      if (sockets > s_minimum_sockets) {
         set_context_maxsockets(sockets);
+        sockets_set = true;
       }
+    }
+    if(!sockets_set) {
+      set_context_maxsockets(s_minimum_sockets);
     }
     
   }
   ~ZmqContext() { m_context.close(); }
   zmq::context_t m_context;
+  static constexpr int s_minimum_sockets = 16636;
 
   ZmqContext(ZmqContext const&) = delete;
   ZmqContext(ZmqContext&&) = delete;
