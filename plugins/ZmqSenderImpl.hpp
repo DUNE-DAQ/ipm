@@ -73,8 +73,9 @@ public:
     std::vector<std::string> resolved;
     try {
 
-      resolved =
-        utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      // resolved =
+      //   utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      resolved = {connection_info.value<std::string>("connection_string", "inproc://default")};
     } catch (utilities::InvalidUri const& err) {
       throw ZmqOperationError(ERS_HERE,
                               "resolve connection_string",
