@@ -31,8 +31,9 @@ public:
     Push,
   };
 
-  explicit ZmqSenderImpl(SenderType type)
-    : m_socket(ZmqContext::instance().GetContext(),
+  explicit ZmqSenderImpl(SenderType type, bool resolve_ips)
+    : Sender(resolve_ips)
+    , m_socket(ZmqContext::instance().GetContext(),
                type == SenderType::Push ? zmq::socket_type::push : zmq::socket_type::pub)
     , m_sender_type(type)
   {
@@ -71,18 +72,21 @@ public:
     }
 
     std::vector<std::string> resolved;
-    try {
+    if (m_resolve_ips) {
+      try {
+        resolved =
+          utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
 
-      // resolved =
-      //   utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      } catch (utilities::InvalidUri const& err) {
+        throw ZmqOperationError(ERS_HERE,
+                                "resolve connection_string",
+                                "send",
+                                "An invalid URI was passed",
+                                connection_info.value<std::string>("connection_string", "inproc://default"),
+                                err);
+      }
+    } else {
       resolved = {connection_info.value<std::string>("connection_string", "inproc://default")};
-    } catch (utilities::InvalidUri const& err) {
-      throw ZmqOperationError(ERS_HERE,
-                              "resolve connection_string",
-                              "send",
-                              "An invalid URI was passed",
-                              connection_info.value<std::string>("connection_string", "inproc://default"),
-                              err);
     }
 
     if (resolved.size() == 0) {

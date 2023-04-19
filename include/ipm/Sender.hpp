@@ -58,9 +58,11 @@ ERS_DECLARE_ISSUE(ipm,
  * @param klass Class to be defined as a DUNE IPM Sender
  */
 // NOLINTNEXTLINE(build/define_used)
-#define DEFINE_DUNE_IPM_SENDER(klass)                                                                                  \
-  EXTERN_C_FUNC_DECLARE_START                                                                                          \
-  std::shared_ptr<dunedaq::ipm::Sender> make() { return std::shared_ptr<dunedaq::ipm::Sender>(new klass()); }          \
+#define DEFINE_DUNE_IPM_SENDER(klass)                                                                           \
+  EXTERN_C_FUNC_DECLARE_START                                                                                   \
+  std::shared_ptr<dunedaq::ipm::Sender> make(const bool& resolve_ips) {                                                \
+    return std::shared_ptr<dunedaq::ipm::Sender>(new klass(resolve_ips));                                       \
+    }                                                                                                           \
   }
 
 namespace dunedaq::ipm {
@@ -75,7 +77,8 @@ public:
 
   using message_size_t = int;
 
-  Sender() = default;
+  Sender(bool resolve_ips)
+    : m_resolve_ips{resolve_ips} { };
   virtual ~Sender() = default;
 
   virtual std::string connect_for_sends(const nlohmann::json& connection_info) = 0;
@@ -108,16 +111,18 @@ protected:
                      std::string const& metadata,
                      bool no_tmoexcept_mode) = 0;
 
+  const bool m_resolve_ips {true};
+
 private:
   mutable std::atomic<size_t> m_bytes = { 0 };
   mutable std::atomic<size_t> m_messages = { 0 };
 };
 
 inline std::shared_ptr<Sender>
-make_ipm_sender(std::string const& plugin_name)
+make_ipm_sender(std::string const& plugin_name, bool resolve_ips=true)
 {
   static cet::BasicPluginFactory bpf("duneIPM", "make");
-  return bpf.makePlugin<std::shared_ptr<Sender>>(plugin_name);
+  return bpf.makePlugin<std::shared_ptr<Sender>,bool&>(plugin_name, resolve_ips);
 }
 
 } // namespace dunedaq::ipm

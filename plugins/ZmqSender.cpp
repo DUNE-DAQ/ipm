@@ -16,8 +16,8 @@ namespace ipm {
 class ZmqSender : public ZmqSenderImpl
 {
 public:
-  ZmqSender()
-    : ZmqSenderImpl(ZmqSenderImpl::SenderType::Push)
+  ZmqSender(bool resolve_ips)
+    : ZmqSenderImpl(ZmqSenderImpl::SenderType::Push, resolve_ips)
   {}
 };
 
