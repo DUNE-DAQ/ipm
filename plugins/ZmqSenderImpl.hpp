@@ -70,53 +70,34 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
-    std::vector<std::string> resolved;
+    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    auto uri = utilities::parse_connection_string(connection_string);
+
+    if (m_sender_type == SenderType::Publisher && uri.scheme == "tcp") {
+      uri.host = "*";
+      connection_string = uri.to_string();
+    }
+
+    TLOG() << "Connection String is " << connection_string;
     try {
-
-      resolved =
-        utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
-    } catch (utilities::InvalidUri const& err) {
-      throw ZmqOperationError(ERS_HERE,
-                              "resolve connection_string",
-                              "send",
-                              "An invalid URI was passed",
-                              connection_info.value<std::string>("connection_string", "inproc://default"),
-                              err);
-    }
-
-    if (resolved.size() == 0) {
-      throw ZmqOperationError(ERS_HERE,
-                              "resolve connection_string",
-                              "send",
-                              "Unable to resolve connection_string",
-                              connection_info.value<std::string>("connection_string", "inproc://default"));
-    }
-    for (auto& connection_string : resolved) {
-      TLOG() << "Connection String is " << connection_string;
-      try {
-        if (m_sender_type == SenderType::Push) {
-          try {
-            m_socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
-          } catch (zmq::error_t const& err) {
-            throw ZmqOperationError(ERS_HERE,
-                                    "set immediate mode",
-                                    "send",
-                                    err.what(),
-                                    connection_info.value<std::string>("connection_string", "inproc://default"));
-          }
-
-          m_socket.connect(connection_string);
-        } else {
-          m_socket.bind(connection_string);
+      if (m_sender_type == SenderType::Push) {
+        try {
+          m_socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
+        } catch (zmq::error_t const& err) {
+          throw ZmqOperationError(ERS_HERE, "set immediate mode", "send", err.what(), connection_string);
         }
-        m_connection_string = m_socket.get(zmq::sockopt::last_endpoint);
-        m_socket_connected = true;
-        break;
-      } catch (zmq::error_t const& err) {
-        auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
-        ers::error(ZmqOperationError(ERS_HERE, operation, "send", err.what(), connection_string));
+
+        m_socket.connect(connection_string);
+      } else {
+        m_socket.bind(connection_string);
       }
+      m_connection_string = m_socket.get(zmq::sockopt::last_endpoint);
+      m_socket_connected = true;
+    } catch (zmq::error_t const& err) {
+      auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
+      ers::error(ZmqOperationError(ERS_HERE, operation, "send", err.what(), connection_string));
     }
+
     if (!m_socket_connected) {
       auto operation = m_sender_type == SenderType::Push ? "connect" : "bind";
       throw ZmqOperationError(ERS_HERE, operation, "send", "Operation failed for all resolved connection strings", "");
