@@ -61,7 +61,7 @@ public:
     }
 
     if (!m_socket_connected) {
-      TLOG() << "Setting socket options";
+      TLOG_DEBUG(18) << "Setting socket options";
       try {
         m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
       } catch (zmq::error_t const& err) {
@@ -70,7 +70,7 @@ public:
     }
     for (auto& conn_string : m_connection_strings) {
       try {
-          TLOG() << "Connecting to publisher at " << conn_string;
+          TLOG_DEBUG(19) << "Connecting to publisher at " << conn_string;
         m_socket.connect(conn_string);
       } catch (zmq::error_t const& err) {
         ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
