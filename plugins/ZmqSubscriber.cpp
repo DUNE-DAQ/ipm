@@ -38,6 +38,7 @@ public:
       for (auto& conn_string : m_connection_strings) {
         try {
           m_socket.disconnect(conn_string);
+          m_connection_strings.erase(conn_string);
         } catch (zmq::error_t const& err) {
           ers::error(ZmqOperationError(ERS_HERE, "disconnect", "receive", err.what(), conn_string));
         }
@@ -48,36 +49,23 @@ public:
 
   std::string connect_for_receives(const nlohmann::json& connection_info) override
   {
-    std::vector<std::string> connection_strings;
+    std::set<std::string> new_connection_strings;
     if (connection_info.contains("connection_string")) {
-      connection_strings.push_back(connection_info.value<std::string>("connection_string", ""));
+      if (m_connection_strings.count(connection_info.value<std::string>("connection_string", "")) == 0)
+        new_connection_strings.insert(connection_info.value<std::string>("connection_string", ""));
     }
 
     for (auto& conn_string : connection_info.value<std::vector<std::string>>("connection_strings", {})) {
-      connection_strings.push_back(conn_string);
+      if (m_connection_strings.count(conn_string) == 0)
+        new_connection_strings.insert(conn_string);
     }
 
-    std::vector<std::string> new_connection_strings;
-    for (auto& conn_string : connection_strings) {
-      try {
-        auto resolved = utilities::resolve_uri_hostname(conn_string);
-        for (auto& res : resolved) {
-          if (!m_connection_strings.count(res)) {
-            m_connection_strings.insert(res);
-            new_connection_strings.push_back(res);
-          }
-        }
-      } catch (utilities::InvalidUri const& err) {
-        ers::warning(
-          ZmqOperationError(ERS_HERE, "resolve connections", "receive", "Invalid URI detected ", conn_string, err));
-      }
-    }
-    if (m_connection_strings.size() == 0) {
+    if (m_connection_strings.size() == 0 && new_connection_strings.size() == 0) {
       throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
     }
 
     if (!m_socket_connected) {
-      TLOG() << "Setting socket options";
+      TLOG_DEBUG(18) << "Setting socket options";
       try {
         m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
       } catch (zmq::error_t const& err) {
@@ -86,8 +74,9 @@ public:
     }
     for (auto& conn_string : new_connection_strings) {
       try {
-          TLOG() << "Connecting to publisher at " << conn_string;
+        TLOG_DEBUG(19) << "Connecting to publisher at " << conn_string;
         m_socket.connect(conn_string);
+        m_connection_strings.insert(conn_string);
       } catch (zmq::error_t const& err) {
         ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
       }
