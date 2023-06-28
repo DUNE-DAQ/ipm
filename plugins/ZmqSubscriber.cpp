@@ -38,7 +38,6 @@ public:
       for (auto& conn_string : m_connection_strings) {
         try {
           m_socket.disconnect(conn_string);
-          m_connection_strings.erase(conn_string);
         } catch (zmq::error_t const& err) {
           ers::error(ZmqOperationError(ERS_HERE, "disconnect", "receive", err.what(), conn_string));
         }
@@ -160,7 +159,7 @@ protected:
 
 private:
   zmq::socket_t m_socket;
-  std::set<std::string> m_connection_strings;
+  std::set<std::string> m_connection_strings{};
   bool m_socket_connected{ false };
   CallbackAdapter m_callback_adapter;
 };
