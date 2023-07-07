@@ -77,7 +77,11 @@ public:
         m_socket.connect(conn_string);
         m_connection_strings.insert(conn_string);
       } catch (zmq::error_t const& err) {
-        ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
+        if (++m_warning_count > 10) {
+          ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
+        } else {
+          ers::warning(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
+        }
       }
     }
     m_socket_connected = true;
@@ -165,6 +169,7 @@ private:
   std::set<std::string> m_connection_strings{};
   bool m_socket_connected{ false };
   CallbackAdapter m_callback_adapter;
+  size_t m_warning_count{ 0 };
 };
 } // namespace ipm
 } // namespace dunedaq
