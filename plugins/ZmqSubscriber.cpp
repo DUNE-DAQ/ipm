@@ -86,7 +86,7 @@ public:
     if (m_connection_strings.size() > 0) {
       return *m_connection_strings.begin();
     }
-    return "";
+    return {};
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
