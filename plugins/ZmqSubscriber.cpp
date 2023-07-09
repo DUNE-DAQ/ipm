@@ -83,7 +83,10 @@ public:
     m_socket_connected = true;
     m_callback_adapter.set_receiver(this);
 
-    return *m_connection_strings.begin();
+    if (m_connection_strings.size() > 0) {
+      return *m_connection_strings.begin();
+    }
+    return {};
   }
 
   bool can_receive() const noexcept override { return m_socket_connected; }
