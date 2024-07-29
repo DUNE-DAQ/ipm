@@ -7,7 +7,7 @@
  */
 
 #include "ipm/Receiver.hpp"
-#include "ipm/receiverinfo/InfoNljs.hpp"
+#include "ipm/IPMInfo.pb.h"
 
 dunedaq::ipm::Receiver::Response
 dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes, bool no_tmoexcept_mode)
@@ -31,13 +31,13 @@ dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes,
 }
 
 void
-dunedaq::ipm::Receiver::get_info(opmonlib::InfoCollector& ci, int /*level*/)
+dunedaq::ipm::Receiver::generate_opmon_data()
 {
 
-  receiverinfo::Info i;
+  opmon::ReceiverInfo i;
 
-  i.bytes = m_bytes.exchange(0);
-  i.messages = m_messages.exchange(0);
+  i.set_bytes(m_bytes.exchange(0));
+  i.set_messages(m_messages.exchange(0));
 
-  ci.add(i);
+  publish(std::move(i));
 }
