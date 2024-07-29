@@ -17,9 +17,6 @@ find_package(opmonlib REQUIRED)
 
 set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json utilities::utilities opmonlib::opmonlib cppzmq pthread)
 
-daq_codegen( senderinfo.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
-daq_codegen( receiverinfo.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
-
 
 #daq_add_library(Receiver.cpp Sender.cpp LINK_LIBRARIES appfwk::appfwk logging::logging cppzmq)
 daq_add_library(Receiver.cpp Sender.cpp CallbackAdapter.cpp LINK_LIBRARIES ${IPM_DEPENDENCIES})
