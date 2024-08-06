@@ -7,7 +7,7 @@
  */
 
 #include "ipm/Sender.hpp"
-#include "ipm/IPMInfo.pb.h"
+#include "ipm/opmon/ipm.pb.h"
 
 #include <string>
 #include <vector>
