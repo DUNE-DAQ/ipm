@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+
+package dunedaq.ipm.opmon;
+
+// Information from the sender	
+message SenderInfo {
+  uint64 bytes = 1;
+  uint64 messages = 2;   
+}
+
+// Information from the receiver	
+message ReceiverInfo {
+  uint64 bytes = 1;
+  uint64 messages = 2;   
+}

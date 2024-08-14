@@ -27,7 +27,7 @@
 #include "cetlib/compiler_macros.h"
 #include "ers/Issue.hpp"
 #include "nlohmann/json.hpp"
-#include "opmonlib/InfoCollector.hpp"
+#include "opmonlib/MonitorableObject.hpp"
 
 #include <atomic>
 #include <memory>
@@ -67,7 +67,7 @@ ERS_DECLARE_ISSUE(ipm,
 
 namespace dunedaq::ipm {
 
-class Receiver
+  class Receiver : public opmonlib::MonitorableObject
 {
 
 public:
@@ -108,9 +108,10 @@ public:
   Receiver(Receiver&&) = delete;
   Receiver& operator=(Receiver&&) = delete;
 
-  void get_info(opmonlib::InfoCollector& ci, int /*level*/);
-
 protected:
+
+  void generate_opmon_data() override ;
+  
   virtual Response receive_(const duration_t& timeout, bool no_tmoexcept_mode) = 0;
 
 private:

@@ -7,7 +7,7 @@
  */
 
 #include "ipm/Sender.hpp"
-#include "ipm/senderinfo/InfoNljs.hpp"
+#include "ipm/opmon/ipm.pb.h"
 
 #include <string>
 #include <vector>
@@ -40,13 +40,13 @@ dunedaq::ipm::Sender::send(const void* message,
 }
 
 void
-dunedaq::ipm::Sender::get_info(opmonlib::InfoCollector& ci, int /*level*/)
+dunedaq::ipm::Sender::generate_opmon_data()
 {
 
-  senderinfo::Info i;
+  opmon::SenderInfo i;
 
-  i.bytes = m_bytes.exchange(0);
-  i.messages = m_messages.exchange(0);
+  i.set_bytes(m_bytes.exchange(0));
+  i.set_messages(m_messages.exchange(0));
 
-  ci.add(i);
+  publish(std::move(i));
 }
