@@ -3,8 +3,6 @@ project(ipm VERSION 2.7.0)
 
 find_package(daq-cmake REQUIRED)
 
-daq_setup_environment()
-
 find_package(logging REQUIRED)
 find_package(utilities REQUIRED)
 find_package(cetlib REQUIRED)
@@ -14,6 +12,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(Boost COMPONENTS unit_test_framework program_options REQUIRED)
 find_package(opmonlib REQUIRED)
 
+daq_setup_environment()
 
 set(IPM_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers logging::logging nlohmann_json::nlohmann_json utilities::utilities opmonlib::opmonlib cppzmq pthread)
 
