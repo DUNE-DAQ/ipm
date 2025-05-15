@@ -2,6 +2,9 @@
  *
  * @file CallbackAdapter.hpp IPM CallbackAdapter class
  *
+ * Manages a thread which performs repeated Receiver::receive calls and calls the given callback method if data is
+ * received.
+ *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
@@ -18,8 +21,7 @@
 #include <mutex>
 #include <thread>
 
-namespace dunedaq {
-namespace ipm {
+namespace dunedaq::ipm {
 
 class CallbackAdapter
 {
@@ -37,13 +39,13 @@ private:
   void shutdown();
   void thread_loop();
 
-  Receiver* m_receiver_ptr{ nullptr };
+  Receiver* m_receiver_ptr{ nullptr }; // Bare pointer used here as CallbackAdapter does not own the Receiver instance,
+                                       // and until set_receiver is called, this will be null.
   std::function<void(Receiver::Response&)> m_callback{ nullptr };
   mutable std::mutex m_callback_mutex;
   std::unique_ptr<std::thread> m_thread{ nullptr };
   std::atomic<bool> m_is_listening{ false };
 };
-} // namespace ipm
-} // namespace dunedaq
+} // namespace dunedaq::ipm
 
 #endif // IPM_SRC_CALLBACKADAPTER_HPP_

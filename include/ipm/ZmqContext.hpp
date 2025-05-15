@@ -14,6 +14,28 @@
 #include "logging/Logging.hpp" // NOTE: if ISSUES ARE DECLARED BEFORE include logging/Logging.hpp, TLOG_DEBUG<<issue wont work.
 #include "zmq.hpp"
 
+enum
+{
+  TLVL_ZMQCONTEXT = 10,
+  TLVL_CONNECTIONSTRING = 11,
+  TLVL_ZMQPUBLISHER_SEND_START = 12,
+  TLVL_ZMQPUBLISHER_SEND_ERR = 2,
+  TLVL_ZMQPUBLISHER_SEND_END = 13,
+  TLVL_ZMQRECEIVER_RECV_HDR = 14,
+  TLVL_ZMQRECEIVER_RECV_HDR_2 = 15,
+  TLVL_ZMQRECEIVER_RECV_DATA = 16,
+  TLVL_ZMQRECEIVER_RECV_DATA_2 = 17,
+  TLVL_ZMQRECEIVER_RECV_END = 18,
+  TLVL_ZMQSENDER_SEND_START = 19,
+  TLVL_ZMQSENDER_SEND_ERR = 3,
+  TLVL_ZMQSENDER_SEND_END = 20,
+  TLVL_ZMQSUBSCRIBER_RECV_HDR = 21,
+  TLVL_ZMQSUBSCRIBER_RECV_HDR_2 = 22,
+  TLVL_ZMQSUBSCRIBER_RECV_DATA = 23,
+  TLVL_ZMQSUBSCRIBER_RECV_DATA_2 = 24,
+  TLVL_ZMQSUBSCRIBER_RECV_END = 25,
+};
+
 namespace dunedaq {
 
 /**
@@ -93,19 +115,23 @@ public:
 
   zmq::context_t& GetContext() { return m_context; }
 
-  void set_context_threads(int nthreads) { 
-      TLOG_DEBUG(10) << "Setting ZMQ Context IO thread count to " << nthreads;
-      m_context.set(zmq::ctxopt::io_threads, nthreads); }
-  void set_context_maxsockets(int max_sockets) { 
-      TLOG_DEBUG(10) << "Setting ZMQ Context max sockets to " << max_sockets;
-      m_context.set(zmq::ctxopt::max_sockets, max_sockets); }
+  void set_context_threads(int nthreads)
+  {
+    TLOG_DEBUG(TLVL_ZMQCONTEXT) << "Setting ZMQ Context IO thread count to " << nthreads;
+    m_context.set(zmq::ctxopt::io_threads, nthreads);
+  }
+  void set_context_maxsockets(int max_sockets)
+  {
+    TLOG_DEBUG(TLVL_ZMQCONTEXT) << "Setting ZMQ Context max sockets to " << max_sockets;
+    m_context.set(zmq::ctxopt::max_sockets, max_sockets);
+  }
 
 private:
   ZmqContext()
   {
     auto threads_c = getenv("IPM_ZMQ_IO_THREADS");
     if (threads_c != nullptr) {
-      auto threads = std::atoi(threads_c);
+      auto threads = std::atoi(threads_c); // NOLINT If a conversion error occurs, we discard the result
       if (threads > 1) {
         set_context_threads(threads);
       }
@@ -114,16 +140,15 @@ private:
     bool sockets_set = false;
     auto sockets_c = getenv("IPM_ZMQ_MAX_SOCKETS");
     if (sockets_c != nullptr) {
-      auto sockets = std::atoi(sockets_c);
+      auto sockets = std::atoi(sockets_c); // NOLINT If a conversion error occurs, we discard the result
       if (sockets > s_minimum_sockets) {
         set_context_maxsockets(sockets);
         sockets_set = true;
       }
     }
-    if(!sockets_set) {
+    if (!sockets_set) {
       set_context_maxsockets(s_minimum_sockets);
     }
-    
   }
   ~ZmqContext() { m_context.close(); }
   zmq::context_t m_context;

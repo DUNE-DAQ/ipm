@@ -9,6 +9,8 @@
 #include "ipm/Receiver.hpp"
 #include "ipm/opmon/ipm.pb.h"
 
+#include <utility>
+
 dunedaq::ipm::Receiver::Response
 dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes, bool no_tmoexcept_mode)
 {

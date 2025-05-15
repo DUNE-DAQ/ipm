@@ -17,12 +17,11 @@
 #include <string>
 #include <vector>
 
-namespace dunedaq {
-namespace ipm {
+namespace dunedaq::ipm {
 class ZmqSender : public Sender
 {
 public:
-  explicit ZmqSender()
+  ZmqSender()
     : m_socket(ZmqContext::instance().GetContext(), zmq::socket_type::push)
   {
   }
@@ -42,7 +41,7 @@ public:
   }
 
   bool can_send() const noexcept override { return m_socket_connected; }
-  std::string connect_for_sends(const nlohmann::json& connection_info)
+  std::string connect_for_sends(const nlohmann::json& connection_info) override
   {
     try {
       m_socket.set(zmq::sockopt::sndtimeo, 0); // Return immediately if we can't send
@@ -54,9 +53,9 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
-    std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
+    auto connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
 
-    TLOG() << "Connection String is " << connection_string;
+    TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << connection_string;
     try {
       m_socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
     } catch (zmq::error_t const& err) {
@@ -84,7 +83,8 @@ protected:
              std::string const& topic,
              bool no_tmoexcept_mode) override
   {
-    TLOG_DEBUG(10) << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
+    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_START)
+      << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     zmq::send_result_t res{};
     do {
@@ -97,7 +97,7 @@ protected:
       }
 
       if (!res || res != topic.size()) {
-        TLOG_DEBUG(2) << "Endpoint " << m_connection_string << ": Unable to send message";
+        TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << "Endpoint " << m_connection_string << ": Unable to send message";
         continue;
       }
 
@@ -117,17 +117,17 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Completed send of " << N << " bytes";
+    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << "Endpoint " << m_connection_string << ": Completed send of " << N
+                                        << " bytes";
     return res && res == N;
   }
 
 private:
   zmq::socket_t m_socket;
   std::string m_connection_string;
-  bool m_socket_connected{false};
+  bool m_socket_connected{ false };
 };
 
-} // namespace ipm
-} // namespace dunedaq
+} // namespace dunedaq::ipm
 
 DEFINE_DUNE_IPM_SENDER(dunedaq::ipm::ZmqSender)
