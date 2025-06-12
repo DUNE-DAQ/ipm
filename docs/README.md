@@ -58,3 +58,10 @@ More complete examples can be found in the `test/plugins` directory.
 ### API Diagram
 
 ![Class Diagrams](https://github.com/DUNE-DAQ/ipm/raw/develop/docs/ipm.png)
+
+### ZeroMQ Configuration Variables
+
+Currently, `ZmqContext.hpp` has two environment variables used to configure ZeroMQ within each application:
+
+* `IPM_ZMQ_IO_THREADS`: Sets the number of threads in the [ZeroMQ context](https://libzmq.readthedocs.io/en/zeromq3-x/zmq_ctx_set.html). _ipm_ does not specify a default, the ZeroMQ default is 1.
+* `IPM_ZMQ_MAX_SOCKETS`: Set the maximum number of sockets allowed on the context. _ipm_ uses a minimum value of **16636**.
