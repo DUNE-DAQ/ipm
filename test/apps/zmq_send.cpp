@@ -1,12 +1,13 @@
 #include "ipm/Sender.hpp"
 #include "ipm/ZmqContext.hpp"
-
+#include "logging/Logging.hpp"
 #include "boost/program_options.hpp"
 
 #include <memory>
 #include <chrono>
 #include <cstdlib>
 #include <cerrno>
+#include <unistd.h>				// sleep
 
 int main(int argc, char* argv[]){
   int npackets=1;
@@ -42,8 +43,14 @@ int main(int argc, char* argv[]){
 
   auto start=std::chrono::steady_clock::now();
   for (int p=0; p<npackets;p++) {
-    // Last arg is send timeout
-    sender->send((void*)message.data(), packetSize, std::chrono::milliseconds(100));
+	  // Last arg is send timeout
+	  int attempt=0;
+	  bool success;
+	  do {
+		  success = sender->send((void*)message.data(), packetSize, std::chrono::milliseconds(2),"",true);
+		  if (success == false && ++attempt == 1)
+			  TLOG() << "bad omen";
+	  } while (success == false);
   }
 
   auto elapsed=std::chrono::steady_clock::now()-start;
@@ -51,5 +58,6 @@ int main(int argc, char* argv[]){
   float bw=((float)packetSize*npackets)/nano;
   std::cout << "Sent " << packetSize*npackets << " bytes in "
                 << nano << " ns " << bw << " GB/s" << std::endl;
-  
+  std::cout << "Sleep 2 to allow finish???\n";
+  sleep(2); // Sleep for 2
 }
