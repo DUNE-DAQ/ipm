@@ -54,14 +54,17 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
 
-    try {
-      m_socket.set(zmq::sockopt::sndhwm, 10); // Only allow 10 messages in-flight
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE,
-                              "set hwm",
-                              "send",
-                              err.what(),
-                              connection_info.value<std::string>("connection_string", "inproc://default"));
+    auto hwm = connection_info.value<int>("capacity", 0);
+    if (hwm > 0) {
+      try {
+        m_socket.set(zmq::sockopt::sndhwm, hwm);
+      } catch (zmq::error_t const& err) {
+        throw ZmqOperationError(ERS_HERE,
+                                "set hwm",
+                                "send",
+                                err.what(),
+                                connection_info.value<std::string>("connection_string", "inproc://default"));
+      }
     }
 
     std::string connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
