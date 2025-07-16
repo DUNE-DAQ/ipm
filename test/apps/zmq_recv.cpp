@@ -15,6 +15,7 @@
 #include "boost/program_options.hpp"
 
 #include <chrono>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -24,7 +25,7 @@ int
 main(int argc, char* argv[])
 {
   std::string conString = "tcp://127.0.0.1:12345";
-  size_t npackets=1;
+  size_t npackets = 1;
   int nthreads = 1;
   int timeout = 10;
 
@@ -54,36 +55,39 @@ main(int argc, char* argv[])
   std::shared_ptr<Receiver> receiver = make_ipm_receiver("ZmqReceiver");
   receiver->connect_for_receives({ { "connection_string", conString } });
 
-  std::map<uint32_t, uint32_t> last_received_sequence;
+  std::map<uint32_t, uint32_t> last_received_sequence; // NOLINT(build/unsigned)
   int64_t first_latency = 0;
   try {
     while (true) {
       // Last arg is receive timeout
       auto start = std::chrono::steady_clock::now();
       double bytesReceived = 0;
-      for (int p = 0; p < npackets; p++) {
+      for (size_t p = 0; p < npackets; p++) {
         Receiver::Response resp = receiver->receive(std::chrono::seconds(timeout));
-        int64_t recvd_ts = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        int64_t recvd_ts =
+          std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())
+            .count();
         bytesReceived += resp.data.size();
-        auto this_id = *(reinterpret_cast<uint32_t*>(resp.data.data()));
-        auto this_sequence = *(reinterpret_cast<uint32_t*>(resp.data.data()) + 1);
-        auto this_ts = *(reinterpret_cast<uint64_t*>(resp.data.data()) + 1);
+        auto this_id = *(reinterpret_cast<uint32_t*>(resp.data.data())); // NOLINT
+        auto this_sequence = *(reinterpret_cast<uint32_t*>(resp.data.data()) + 1); // NOLINT
+        auto this_ts = *(reinterpret_cast<uint64_t*>(resp.data.data()) + 1); // NOLINT
 
-        if(this_sequence < last_received_sequence[this_id] + 1) {
-          TLOG() << "Received sequence ID " << this_sequence << " < expected sequence " << (last_received_sequence[this_id] + 1) << " from sender " << this_id;
+        if (this_sequence < last_received_sequence[this_id] + 1) {
+          TLOG() << "Received sequence ID " << this_sequence << " < expected sequence "
+                 << (last_received_sequence[this_id] + 1) << " from sender " << this_id;
         }
-        int64_t this_latency = recvd_ts - this_ts;
-        if(first_latency == 0) {
+        auto this_latency = static_cast<int64_t>(recvd_ts - this_ts);
+        if (first_latency == 0) {
           first_latency = this_latency;
         }
-        TLOG_DEBUG(6) << "Received message " << this_sequence << " from sender " << this_id << ", latency= " << this_latency << " us (diff= " << (this_latency - first_latency) << " us)";
+        TLOG_DEBUG(6) << "Received message " << this_sequence << " from sender " << this_id
+                      << ", latency= " << this_latency << " us (diff= " << (this_latency - first_latency) << " us)";
         last_received_sequence[this_id] = this_sequence;
       }
       auto elapsed = std::chrono::steady_clock::now() - start;
       auto nano = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
       auto bw = bytesReceived / static_cast<double>(nano);
-      TLOG() << "Received " << bytesReceived << " bytes in "
-                << nano << " ns " << bw << " GB/s";
+      TLOG() << "Received " << bytesReceived << " bytes in " << nano << " ns " << bw << " GB/s";
       // std::cout << "resp.data=";
       // for (auto d: resp.data) {
       //   std::cout << d << std::endl;
