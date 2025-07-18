@@ -68,9 +68,9 @@ main(int argc, char* argv[])
           std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())
             .count();
         bytesReceived += resp.data.size();
-        auto this_id = *(reinterpret_cast<uint32_t*>(resp.data.data())); // NOLINT
+        auto this_id = *(reinterpret_cast<uint32_t*>(resp.data.data()));           // NOLINT
         auto this_sequence = *(reinterpret_cast<uint32_t*>(resp.data.data()) + 1); // NOLINT
-        auto this_ts = *(reinterpret_cast<uint64_t*>(resp.data.data()) + 1); // NOLINT
+        auto this_ts = *(reinterpret_cast<uint64_t*>(resp.data.data()) + 1);       // NOLINT
 
         if (this_sequence < last_received_sequence[this_id] + 1) {
           TLOG() << "Received sequence ID " << this_sequence << " < expected sequence "
