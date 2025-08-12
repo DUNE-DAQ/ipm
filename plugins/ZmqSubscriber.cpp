@@ -15,11 +15,11 @@
 #include "logging/Logging.hpp"
 #include "utilities/Resolver.hpp"
 
+#include <set>
 #include <string>
 #include <vector>
 
-namespace dunedaq {
-namespace ipm {
+namespace dunedaq::ipm {
 
 class ZmqSubscriber : public Subscriber
 {
@@ -64,7 +64,6 @@ public:
     }
 
     if (!m_socket_connected) {
-      TLOG_DEBUG(18) << "Setting socket options";
       try {
         m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
       } catch (zmq::error_t const& err) {
@@ -73,7 +72,7 @@ public:
     }
     for (auto& conn_string : new_connection_strings) {
       try {
-        TLOG_DEBUG(19) << "Connecting to publisher at " << conn_string;
+        TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << conn_string;
         m_socket.connect(conn_string);
         m_connection_strings.insert(conn_string);
       } catch (zmq::error_t const& err) {
@@ -108,29 +107,33 @@ public:
     }
   }
 
-  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
-  void unregister_callback() { m_callback_adapter.clear_callback(); }
+  void register_callback(std::function<void(Response&)> callback) override
+  {
+    m_callback_adapter.set_callback(callback);
+  }
+  void unregister_callback() override { m_callback_adapter.clear_callback(); }
 
 protected:
   Receiver::Response receive_(const duration_t& timeout, bool no_tmoexcept_mode) override
   {
     Receiver::Response output;
-    zmq::message_t hdr, msg;
+    zmq::message_t hdr;
+    zmq::message_t msg;
     zmq::recv_result_t res{};
 
     auto start_time = std::chrono::steady_clock::now();
     do {
 
       try {
-        TLOG_DEBUG(20) << "Subscriber: Going to receive header";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_HDR) << "Subscriber: Going to receive header";
         res = m_socket.recv(hdr);
-        TLOG_DEBUG(25) << "Subscriber: Recv res=" << res.value_or(0) << " for header (hdr.size() == " << hdr.size()
-                       << ")";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_HDR_2)
+          << "Subscriber: Recv res=" << res.value_or(0) << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
       if (res || hdr.more()) {
-        TLOG_DEBUG(20) << "Subscriber: Going to receive data";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_DATA) << "Subscriber: Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
@@ -141,8 +144,8 @@ protected:
         } catch (zmq::error_t const& err) {
           throw ZmqReceiveError(ERS_HERE, err.what(), "data");
         }
-        TLOG_DEBUG(25) << "Subscriber: Recv res=" << res.value_or(0) << " for data (msg.size() == " << msg.size()
-                       << ")";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_DATA_2)
+          << "Subscriber: Recv res=" << res.value_or(0) << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else if (timeout > duration_t::zero()) {
@@ -155,8 +158,8 @@ protected:
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(15) << "Subscriber: Returning output with metadata size " << output.metadata.size() << " and data size "
-                   << output.data.size();
+    TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_END) << "Subscriber: Returning output with metadata size "
+                                            << output.metadata.size() << " and data size " << output.data.size();
     return output;
   }
 
@@ -166,7 +169,6 @@ private:
   bool m_socket_connected{ false };
   CallbackAdapter m_callback_adapter;
 };
-} // namespace ipm
-} // namespace dunedaq
+} // namespace dunedaq::ipm
 
 DEFINE_DUNE_IPM_RECEIVER(dunedaq::ipm::ZmqSubscriber)

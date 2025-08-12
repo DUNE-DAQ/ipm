@@ -11,6 +11,7 @@
 
 #include "logging/Logging.hpp"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -77,7 +78,7 @@ CallbackAdapter::startup()
 {
   shutdown();
   m_is_listening = false;
-  m_thread.reset(new std::thread([&] { thread_loop(); }));
+  m_thread = std::make_unique<std::thread>([&] { thread_loop(); });
 
   while (!m_is_listening.load()) {
     usleep(1000);
@@ -91,7 +92,7 @@ CallbackAdapter::thread_loop()
     try {
       auto response = m_receiver_ptr->receive(Receiver::s_no_block);
 
-      TLOG_DEBUG(25) << "Received " << response.data.size() << " bytes. Dispatching to callback.";
+      TLOG_DEBUG(45) << "Received " << response.data.size() << " bytes. Dispatching to callback.";
       {
         std::lock_guard<std::mutex> lk(m_callback_mutex);
         if (m_callback != nullptr) {

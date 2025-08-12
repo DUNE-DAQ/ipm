@@ -15,6 +15,8 @@ Users should interact with IPM via the interfaces `dunedaq::ipm::Sender`, `duned
 * `ZmqPublisher` implementing `dunedaq::ipm::Sender` in the publisher/subscriber pattern
 * `ZmqSubscriber` implementing `dunedaq::ipm::Subscriber`
 
+Additioanlly, the `CallbackAdapter` class implements callback functionality for the `ZmqReceiver` and `ZmqSubscriber` class, since ZeroMQ does not have a native callback functionality. It does this by managing a thread which calls `receive` in a loop, calling the given function when data is returned.
+
 Basic example of the sender/receiver pattern:
 
 ```c++
@@ -54,6 +56,7 @@ Receiver::Response response=subscriber->receive(std::chrono::milliseconds(10));
 
 More complete examples can be found in the `test/plugins` directory.
 
+There is an asymmetry between `send` and `receive`, where `send` takes a `void*` and `receive` returns a `std::vector<char>`. This is a result of the fact that IPM does *not* own the memory being passed to `send`, but it does have to *transfer* the memory returned from `receive`.
 
 ### API Diagram
 

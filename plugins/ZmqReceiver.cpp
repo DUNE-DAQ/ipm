@@ -17,15 +17,15 @@
 #include <string>
 #include <vector>
 
-namespace dunedaq {
-namespace ipm {
+namespace dunedaq::ipm {
 
 class ZmqReceiver : public Receiver
 {
 public:
   ZmqReceiver()
     : m_socket(ZmqContext::instance().GetContext(), zmq::socket_type::pull)
-  {}
+  {
+  }
 
   ~ZmqReceiver()
   {
@@ -85,7 +85,7 @@ public:
                               connection_info.value<std::string>("connection_string", "inproc://default"));
     }
     for (auto& connection_string : resolved) {
-      TLOG() << "Connection String is " << connection_string;
+      TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << connection_string;
       try {
         m_socket.bind(connection_string);
         m_connection_string = m_socket.get(zmq::sockopt::last_endpoint);
@@ -106,29 +106,34 @@ public:
 
   bool can_receive() const noexcept override { return m_socket_connected; }
 
-  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
-  void unregister_callback() { m_callback_adapter.clear_callback(); }
+  void register_callback(std::function<void(Response&)> callback) override
+  {
+    m_callback_adapter.set_callback(callback);
+  }
+  void unregister_callback() override { m_callback_adapter.clear_callback(); }
 
 protected:
   Receiver::Response receive_(const duration_t& timeout, bool no_tmoexcept_mode) override
   {
     Receiver::Response output;
-    zmq::message_t hdr, msg;
+    zmq::message_t hdr;
+    zmq::message_t msg;
     zmq::recv_result_t res{};
 
     auto start_time = std::chrono::steady_clock::now();
     do {
 
       try {
-        TLOG_DEBUG(20) << "Endpoint " << m_connection_string << ": Going to receive header";
+        TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_HDR) << "Endpoint " << m_connection_string << ": Going to receive header";
         res = m_socket.recv(hdr);
-        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
-                       << " for header (hdr.size() == " << hdr.size() << ")";
+        TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_HDR_2)
+          << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
+          << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, err.what(), "header");
       }
       if (res || hdr.more()) {
-        TLOG_DEBUG(20) << "Endpoint " << m_connection_string << ": Going to receive data";
+        TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_DATA) << "Endpoint " << m_connection_string << ": Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
@@ -139,8 +144,9 @@ protected:
         } catch (zmq::error_t const& err) {
           throw ZmqReceiveError(ERS_HERE, err.what(), "data");
         }
-        TLOG_DEBUG(25) << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
-                       << " for data (msg.size() == " << msg.size() << ")";
+        TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_DATA_2)
+          << "Endpoint " << m_connection_string << ": Recv res=" << res.value_or(0)
+          << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else if (timeout > duration_t::zero()) {
@@ -153,8 +159,9 @@ protected:
       throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
     }
 
-    TLOG_DEBUG(15) << "Endpoint " << m_connection_string << ": Returning output with metadata size "
-                   << output.metadata.size() << " and data size " << output.data.size();
+    TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_END)
+      << "Endpoint " << m_connection_string << ": Returning output with metadata size " << output.metadata.size()
+      << " and data size " << output.data.size();
     return output;
   }
 
@@ -164,7 +171,6 @@ private:
   bool m_socket_connected{ false };
   CallbackAdapter m_callback_adapter;
 };
-} // namespace ipm
-} // namespace dunedaq
+} // namespace dunedaq::ipm
 
 DEFINE_DUNE_IPM_RECEIVER(dunedaq::ipm::ZmqReceiver)

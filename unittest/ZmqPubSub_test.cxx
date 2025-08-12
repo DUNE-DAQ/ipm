@@ -142,7 +142,9 @@ BOOST_AUTO_TEST_CASE(MultiplePublishers)
   auto second_publisher = make_ipm_sender("ZmqPublisher");
   auto the_subscriber = make_ipm_subscriber("ZmqSubscriber");
 
-  nlohmann::json first_json, second_json, sub_json;
+  nlohmann::json first_json;
+  nlohmann::json second_json;
+  nlohmann::json sub_json;
   first_json["connection_string"] = "inproc://foo";
   first_publisher->connect_for_sends(first_json);
   second_json["connection_string"] = "inproc://bar";
