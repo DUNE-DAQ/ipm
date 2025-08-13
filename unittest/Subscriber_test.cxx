@@ -32,9 +32,10 @@ public:
   SubscriberImpl()
     : m_can_receive(false)
     , m_subscriptions()
-  {}
+  {
+  }
 
-  std::string connect_for_receives(const nlohmann::json& /* connection_info */)
+  std::string connect_for_receives(const nlohmann::json& /* connection_info */) override
   {
     m_can_receive = true;
     m_callback_adapter.set_receiver(this);
@@ -47,8 +48,11 @@ public:
     m_can_receive = false;
   }
 
-  void register_callback(std::function<void(Response&)> callback) { m_callback_adapter.set_callback(callback); }
-  void unregister_callback() { m_callback_adapter.clear_callback(); }
+  void register_callback(std::function<void(Response&)> callback) override
+  {
+    m_callback_adapter.set_callback(callback);
+  }
+  void unregister_callback() override { m_callback_adapter.clear_callback(); }
 
   void subscribe(std::string const& topic) override { m_subscriptions.insert(topic); }
   void unsubscribe(std::string const& topic) override { m_subscriptions.erase(topic); }

@@ -58,15 +58,18 @@ ERS_DECLARE_ISSUE(ipm,
  * @brief Declare the function that will be called by the plugin loader
  * @param klass Class to be defined as a DUNE IPM Sender
  */
-// NOLINTNEXTLINE(build/define_used)
+// NOLINTNEXTLINE
 #define DEFINE_DUNE_IPM_SENDER(klass)                                                                                  \
   EXTERN_C_FUNC_DECLARE_START                                                                                          \
-  std::shared_ptr<dunedaq::ipm::Sender> make() { return std::shared_ptr<dunedaq::ipm::Sender>(new klass()); }          \
+  std::shared_ptr<dunedaq::ipm::Sender> make()                                                                         \
+  {                                                                                                                    \
+    return std::shared_ptr<dunedaq::ipm::Sender>(new klass());                                                         \
+  }                                                                                                                    \
   }
 
 namespace dunedaq::ipm {
 
-  class Sender : public opmonlib::MonitorableObject 
+class Sender : public opmonlib::MonitorableObject
 {
 
 public:
@@ -101,9 +104,8 @@ public:
   Sender& operator=(Sender&&) = delete;
 
 protected:
-
   void generate_opmon_data() override;
-  
+
   virtual bool send_(const void* message,
                      message_size_t N,
                      const duration_t& timeout,
