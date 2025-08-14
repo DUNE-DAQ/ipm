@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(ipm VERSION 2.9.0)
+project(ipm VERSION 3.0.0)
 
 find_package(daq-cmake REQUIRED)
 
