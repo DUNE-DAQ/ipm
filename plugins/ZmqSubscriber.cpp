@@ -13,7 +13,6 @@
 #include "ipm/ZmqContext.hpp"
 
 #include "logging/Logging.hpp"
-#include "utilities/Resolver.hpp"
 
 #include <set>
 #include <string>
