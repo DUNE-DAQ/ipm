@@ -11,7 +11,7 @@
 #include "ipm/ZmqContext.hpp"
 
 #include "logging/Logging.hpp"
-#include "utilities/Resolver.hpp"
+#include "utilities/ZmqUri.hpp"
 #include "zmq.hpp"
 
 #include <string>
@@ -68,8 +68,8 @@ public:
 
     std::vector<std::string> resolved;
     try {
-      resolved =
-        utilities::resolve_uri_hostname(connection_info.value<std::string>("connection_string", "inproc://default"));
+      utilities::ZmqUri this_uri(connection_info.value<std::string>("connection_string", "inproc://default"));
+      resolved = this_uri.get_uri_ip_addresses();
     } catch (utilities::InvalidUri const& err) {
       throw ZmqOperationError(ERS_HERE,
                               "resolve connection_string",
