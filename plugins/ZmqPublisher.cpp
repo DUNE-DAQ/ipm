@@ -153,7 +153,7 @@ protected:
 private:
   zmq::socket_t m_socket;
   std::string m_connection_string;
-  bool m_socket_connected;
+  bool m_socket_connected{ false };
 };
 
 } // namespace dunedaq::ipm
