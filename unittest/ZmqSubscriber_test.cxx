@@ -7,6 +7,7 @@
  */
 
 #include "ipm/Subscriber.hpp"
+#include "ipm/ZmqContext.hpp"
 
 #define BOOST_TEST_MODULE ZmqSubscriber_test // NOLINT
 
@@ -27,6 +28,27 @@ BOOST_AUTO_TEST_CASE(BasicTests)
 
   auto the_receiver = make_ipm_receiver("ZmqSubscriber");
   BOOST_REQUIRE(the_receiver != nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(Errors)
+{
+  auto the_subscriber = make_ipm_subscriber("ZmqSubscriber");
+  BOOST_REQUIRE(the_subscriber != nullptr);
+  BOOST_REQUIRE(!the_subscriber->can_receive());
+
+  nlohmann::json config_json;
+
+  config_json["connection_string"] = "not a uri";
+  the_subscriber->connect_for_receives(config_json);
+  BOOST_REQUIRE(the_subscriber->can_receive());
+
+  config_json["connection_string"] = "tcp://thishostddoesnotexist";
+  the_subscriber->connect_for_receives(config_json);
+  BOOST_REQUIRE(the_subscriber->can_receive());
+
+  config_json["connection_string"] = "badproto://default";
+  the_subscriber->connect_for_receives(config_json);
+  BOOST_REQUIRE(the_subscriber->can_receive());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -7,10 +7,12 @@
  */
 
 #include "ipm/Sender.hpp"
+#include "ipm/ZmqContext.hpp"
 
 #define BOOST_TEST_MODULE ZmqPublisher_test // NOLINT
 
 #include "boost/test/unit_test.hpp"
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <vector>
@@ -23,6 +25,33 @@ BOOST_AUTO_TEST_CASE(BasicTests)
 {
   auto the_sender = make_ipm_sender("ZmqPublisher");
   BOOST_REQUIRE(the_sender != nullptr);
+  BOOST_REQUIRE(!the_sender->can_send());
+}
+
+BOOST_AUTO_TEST_CASE(Errors)
+{
+  auto the_sender = make_ipm_sender("ZmqPublisher");
+  BOOST_REQUIRE(the_sender != nullptr);
+  BOOST_REQUIRE(!the_sender->can_send());
+
+  nlohmann::json config_json;
+
+  config_json["connection_string"] = "not a uri";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+    return std::string(e.what()).find("invalid URI") != std::string::npos;
+  });
+  BOOST_REQUIRE(!the_sender->can_send());
+
+  config_json["connection_string"] = "tcp://thishostddoesnotexist";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+    return std::string(e.what()).find("Unable to resolve connection_string") != std::string::npos;
+  });
+  BOOST_REQUIRE(!the_sender->can_send());
+
+  config_json["connection_string"] = "badproto://default";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+    return std::string(e.what()).find("while calling bind on the ZMQ send socket") != std::string::npos;
+  });
   BOOST_REQUIRE(!the_sender->can_send());
 }
 
