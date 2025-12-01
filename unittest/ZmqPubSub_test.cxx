@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(!the_sender->can_send());
 
   nlohmann::json config_json;
-  config_json["connection_string"] = "inproc://default";
+  config_json["connection_string"] = "inproc://sendreceive";
   the_sender->connect_for_sends(config_json);
   the_receiver->connect_for_receives(config_json);
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
     [&](dunedaq::ipm::ReceiveTimeoutExpired) { return elapsed_time_milliseconds(before_recv) >= 100; });
 
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
-  auto response = the_receiver->receive(Receiver::s_block);
+  auto response = the_receiver->receive(std::chrono::milliseconds(100));
   BOOST_REQUIRE_EQUAL(response.data.size(), 4);
   BOOST_REQUIRE_EQUAL(response.data[0], 'T');
   BOOST_REQUIRE_EQUAL(response.data[1], 'E');
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
   BOOST_REQUIRE(!the_sender->can_send());
 
   nlohmann::json config_json;
-  config_json["connection_string"] = "inproc://default";
+  config_json["connection_string"] = "inproc://callback";
   the_sender->connect_for_sends(config_json);
   the_receiver->connect_for_receives(config_json);
 
@@ -115,9 +115,8 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
   message_received = false;
   test_data = { 'A', 'N', 'O', 'T', 'H', 'E', 'R', ' ', 'T', 'E', 'S', 'T' };
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
-  while (!message_received.load()) {
-    usleep(15000);
-  }
+  usleep(100000);
+  BOOST_REQUIRE_EQUAL(message_received, true);
 
   message_received = false;
   test_data = { 'A', ' ', 'T', 'H', 'I', 'R', 'D', ' ', 'T', 'E', 'S', 'T' };
@@ -132,7 +131,7 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
 
   usleep(100000);
   BOOST_REQUIRE_EQUAL(message_received, false);
-  auto response = the_receiver->receive(Receiver::s_block);
+  auto response = the_receiver->receive(std::chrono::milliseconds(1000));
   BOOST_REQUIRE_EQUAL(response.data.size(), test_data.size());
 }
 
@@ -156,7 +155,7 @@ BOOST_AUTO_TEST_CASE(MultiplePublishers)
 
   std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
   first_publisher->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
-  auto response = the_subscriber->receive(Receiver::s_block);
+  auto response = the_subscriber->receive(std::chrono::milliseconds(1000));
   BOOST_REQUIRE_EQUAL(response.data.size(), 4);
   BOOST_REQUIRE_EQUAL(response.data[0], 'T');
   BOOST_REQUIRE_EQUAL(response.data[1], 'E');
@@ -164,7 +163,7 @@ BOOST_AUTO_TEST_CASE(MultiplePublishers)
   BOOST_REQUIRE_EQUAL(response.data[3], 'T');
 
   second_publisher->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
-  auto response2 = the_subscriber->receive(Receiver::s_block);
+  auto response2 = the_subscriber->receive(std::chrono::milliseconds(1000));
   BOOST_REQUIRE_EQUAL(response2.data.size(), 4);
   BOOST_REQUIRE_EQUAL(response2.data[0], 'T');
   BOOST_REQUIRE_EQUAL(response2.data[1], 'E');
