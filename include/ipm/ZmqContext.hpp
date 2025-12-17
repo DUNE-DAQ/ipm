@@ -21,6 +21,7 @@ enum
   TLVL_ZMQPUBLISHER_SEND_START = 12,
   TLVL_ZMQPUBLISHER_SEND_ERR = 2,
   TLVL_ZMQPUBLISHER_SEND_END = 13,
+  TLVL_ZMQPUBLISHER_DESTRUCTOR = 5,
   TLVL_ZMQRECEIVER_RECV_HDR = 14,
   TLVL_ZMQRECEIVER_RECV_HDR_2 = 15,
   TLVL_ZMQRECEIVER_RECV_DATA = 16,
@@ -29,6 +30,7 @@ enum
   TLVL_ZMQSENDER_SEND_START = 19,
   TLVL_ZMQSENDER_SEND_ERR = 3,
   TLVL_ZMQSENDER_SEND_END = 20,
+  TLVL_ZMQSENDER_DESTRUCTOR = 5,
   TLVL_ZMQSUBSCRIBER_RECV_HDR = 21,
   TLVL_ZMQSUBSCRIBER_RECV_HDR_2 = 22,
   TLVL_ZMQSUBSCRIBER_RECV_DATA = 23,
@@ -150,7 +152,11 @@ private:
       set_context_maxsockets(s_minimum_sockets);
     }
   }
-  ~ZmqContext() { m_context.close(); }
+  ~ZmqContext() { 
+      TLOG_DEBUG(TLVL_ZMQCONTEXT) << "Closing ZMQ Context";
+      m_context.close();
+      TLOG_DEBUG(TLVL_ZMQCONTEXT) << "ZMQ Context closed";
+  }
   zmq::context_t m_context;
   static constexpr int s_minimum_sockets = 16636;
 
