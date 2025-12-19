@@ -98,6 +98,4 @@ main(int argc, char* argv[])
   auto nano = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
   auto bw = (packetSize * npackets) / static_cast<double>(nano);
   TLOG() << "Sent " << packetSize * npackets << " bytes in " << nano << " ns " << bw << " GB/s";
-  TLOG() << "Sleep 2 to allow finish???";
-  sleep(2); // Sleep for 2
 }
