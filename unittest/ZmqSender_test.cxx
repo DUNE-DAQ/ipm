@@ -33,22 +33,22 @@ BOOST_AUTO_TEST_CASE(Errors)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json config_json;
+  Sender::ConnectionInfo config("ZmqSenderTestConn");
 
-  config_json["connection_string"] = "not a uri";
-  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "not a uri";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
   });
   BOOST_REQUIRE(!the_sender->can_send());
   
-  config_json["connection_string"] = "tcp://thishostddoesnotexist";
-  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "tcp://thishostddoesnotexist";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
   });
   BOOST_REQUIRE(!the_sender->can_send());
   
-  config_json["connection_string"] = "badproto://default";
-  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "badproto://default";
+  BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
   });
   BOOST_REQUIRE(!the_sender->can_send());

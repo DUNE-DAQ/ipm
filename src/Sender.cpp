@@ -29,7 +29,7 @@ dunedaq::ipm::Sender::send(const void* message,
   }
 
   if (!message) {
-    throw NullPointerPassedToSend(ERS_HERE);
+    throw NullPointerPassedToSend(ERS_HERE, m_connection_info.connection_name);
   }
 
   auto res = send_(message, message_size, timeout, metadata, no_tmoexcept_mode);

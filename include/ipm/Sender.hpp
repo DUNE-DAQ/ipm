@@ -27,7 +27,6 @@
 #include "cetlib/compiler_macros.h"
 #include "ers/Issue.hpp"
 #include "logging/Logging.hpp" // NOTE: if ISSUES ARE DECLARED BEFORE include logging/Logging.hpp, TLOG_DEBUG<<issue wont work.
-#include "nlohmann/json.hpp"
 #include "opmonlib/MonitorableObject.hpp"
 
 #include <atomic>
@@ -38,7 +37,10 @@
 namespace dunedaq {
 // Disable coverage collection LCOV_EXCL_START
 ERS_DECLARE_ISSUE(ipm, KnownStateForbidsSend, "Sender not in a state to send data", )
-ERS_DECLARE_ISSUE(ipm, NullPointerPassedToSend, "An null pointer to memory was passed to Sender::send", )
+ERS_DECLARE_ISSUE(ipm,
+                  NullPointerPassedToSend,
+                  connection_name << ": An null pointer to memory was passed to Sender::send",
+                  ((std::string)connection_name))
 ERS_DECLARE_ISSUE(ipm,
                   SendTimeoutExpired,
                   "Unable to send within timeout period (timeout period was " << timeout << " milliseconds)",
@@ -73,6 +75,12 @@ class Sender : public opmonlib::MonitorableObject
 {
 
 public:
+  struct ConnectionInfo
+  {
+    std::string connection_name{ "" };
+    std::string connection_string{ "inproc://default" };
+    int capacity{ 0 };
+  };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();
   static constexpr duration_t s_no_block = duration_t::zero();
@@ -82,7 +90,7 @@ public:
   Sender() = default;
   virtual ~Sender() = default;
 
-  virtual std::string connect_for_sends(const nlohmann::json& connection_info) = 0;
+  virtual std::string connect_for_sends(const ConnectionInfo& connection_info) = 0;
 
   virtual bool can_send() const noexcept = 0;
 
@@ -104,6 +112,7 @@ public:
   Sender& operator=(Sender&&) = delete;
 
 protected:
+  ConnectionInfo m_connection_info;
   void generate_opmon_data() override;
 
   virtual bool send_(const void* message,

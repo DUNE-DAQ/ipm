@@ -27,7 +27,6 @@
 #include "cetlib/compiler_macros.h"
 #include "ers/Issue.hpp"
 #include "logging/Logging.hpp" // NOTE: if ISSUES ARE DECLARED BEFORE include logging/Logging.hpp, TLOG_DEBUG<<issue wont work.
-#include "nlohmann/json.hpp"
 #include "opmonlib/MonitorableObject.hpp"
 
 #include <atomic>
@@ -40,12 +39,12 @@ namespace dunedaq {
 ERS_DECLARE_ISSUE(ipm, KnownStateForbidsReceive, "Receiver not in a state to receive data", )
 ERS_DECLARE_ISSUE(ipm,
                   UnexpectedNumberOfBytes,
-                  "Expected " << bytes1 << " bytes in message but received " << bytes2,
-                  ((int)bytes1)((int)bytes2)) // NOLINT
+                  connection_name << ": Expected " << bytes1 << " bytes in message but received " << bytes2,
+                  ((std::string)connection_name)((int)bytes1)((int)bytes2)) // NOLINT
 ERS_DECLARE_ISSUE(ipm,
                   ReceiveTimeoutExpired,
-                  "Unable to receive within timeout period (timeout period was " << timeout << " milliseconds)",
-                  ((int)timeout)) // NOLINT
+                  connection_name << ": Unable to receive within timeout period (timeout period was " << timeout << " milliseconds)",
+                  ((std::string)connection_name)((int)timeout)) // NOLINT
 // Reenable coverage collection LCOV_EXCL_STOP
 } // namespace dunedaq
 
@@ -75,6 +74,12 @@ class Receiver : public opmonlib::MonitorableObject
 {
 
 public:
+    struct ConnectionInfo
+    {
+      std::string connection_name{ "" };
+      std::string connection_string{ "" };
+      std::vector<std::string> connection_strings{};
+    };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();
   static constexpr duration_t s_no_block = duration_t::zero();
@@ -86,7 +91,7 @@ public:
   Receiver() = default;
   virtual ~Receiver() = default;
 
-  virtual std::string connect_for_receives(const nlohmann::json& connection_info) = 0;
+  virtual std::string connect_for_receives(const ConnectionInfo& connection_info) = 0;
 
   virtual bool can_receive() const noexcept = 0;
 
@@ -113,6 +118,7 @@ public:
   Receiver& operator=(Receiver&&) = delete;
 
 protected:
+  ConnectionInfo m_connection_info;
   void generate_opmon_data() override;
 
   virtual Response receive_(const duration_t& timeout, bool no_tmoexcept_mode) = 0;
