@@ -152,10 +152,11 @@ private:
       set_context_maxsockets(s_minimum_sockets);
     }
   }
-  ~ZmqContext() { 
-      TLOG_DEBUG(TLVL_ZMQCONTEXT) << "Closing ZMQ Context";
-      m_context.close();
-      TLOG_DEBUG(TLVL_ZMQCONTEXT) << "ZMQ Context closed";
+  ~ZmqContext()
+  {
+    TLOG_DEBUG(TLVL_ZMQCONTEXT) << "Closing ZMQ Context";
+    m_context.close();
+    TLOG_DEBUG(TLVL_ZMQCONTEXT) << "ZMQ Context closed";
   }
   zmq::context_t m_context;
   static constexpr int s_minimum_sockets = 16636;

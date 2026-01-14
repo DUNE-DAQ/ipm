@@ -34,9 +34,12 @@ public:
         TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR) << "Setting socket HWM to zero";
         m_socket.set(zmq::sockopt::sndhwm, 1);
 
-        TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR) << "Waiting up to 10s for socket to become writable before disconnecting";
+        TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR)
+          << "Waiting up to 10s for socket to become writable before disconnecting";
         auto start_time = std::chrono::steady_clock::now();
-        while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() < 10000) {
+        while (
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() <
+          10000) {
           auto events = m_socket.get(zmq::sockopt::events);
           if ((events & ZMQ_POLLOUT) != 0) {
             break;
