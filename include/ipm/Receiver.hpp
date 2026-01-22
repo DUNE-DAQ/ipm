@@ -102,6 +102,7 @@ public:
   };
 
   Response receive(const duration_t& timeout, message_size_t num_bytes = s_any_size, bool no_tmoexcept_mode = false);
+  virtual bool data_pending() = 0;
 
   virtual void register_callback(std::function<void(Response&)>) = 0;
   virtual void unregister_callback() = 0;

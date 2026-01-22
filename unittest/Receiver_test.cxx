@@ -52,6 +52,8 @@ public:
     m_can_receive = false;
   }
 
+  bool data_pending() override { return true; }
+
 protected:
   Receiver::Response receive_(const duration_t& /* timeout */, bool /*no_tmoexcept_mode*/) override
   {

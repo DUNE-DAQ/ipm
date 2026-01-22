@@ -59,6 +59,8 @@ public:
 
   std::set<std::string> get_subscriptions() const { return m_subscriptions; }
 
+  bool data_pending() override { return true; }
+
 protected:
   Receiver::Response receive_(const duration_t& /* timeout */, bool /*no_tmoexcept_mode*/) override
   {
