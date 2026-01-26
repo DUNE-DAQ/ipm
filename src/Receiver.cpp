@@ -22,7 +22,7 @@ dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes,
   if (bytes != s_any_size) {
     auto received_size = static_cast<message_size_t>(message.data.size());
     if (received_size != bytes) {
-      throw UnexpectedNumberOfBytes(ERS_HERE, received_size, bytes);
+      throw UnexpectedNumberOfBytes(ERS_HERE, m_connection_info.connection_name, received_size, bytes);
     }
   }
 

@@ -40,24 +40,33 @@ BOOST_AUTO_TEST_CASE(Errors)
   BOOST_REQUIRE(the_receiver != nullptr);
   BOOST_REQUIRE(!the_receiver->can_receive());
 
-  nlohmann::json config_json;
+  Receiver::ConnectionInfo config("ZmqReceiverTestConn");
 
-  config_json["connection_string"] = "not a uri";
-  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "not a uri";
+  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("invalid URI") != std::string::npos;
   });
   BOOST_REQUIRE(!the_receiver->can_receive());
 
-  config_json["connection_string"] = "tcp://thishostddoesnotexist";
-  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "tcp://thishostddoesnotexist";
+  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Unable to resolve connection_string") != std::string::npos;
   });
   BOOST_REQUIRE(!the_receiver->can_receive());
 
-  config_json["connection_string"] = "badproto://default";
-  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "badproto://default";
+  BOOST_REQUIRE_EXCEPTION(the_receiver->connect_for_receives(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("while calling bind on the ZMQ receive socket") != std::string::npos;
   });
   BOOST_REQUIRE(!the_receiver->can_receive());
+
+  config.connection_string = "inproc://default";
+  config.connection_name = "timeout_test";
+  the_receiver->connect_for_receives(config);
+  BOOST_REQUIRE(the_receiver->can_receive());
+  BOOST_REQUIRE_EXCEPTION(the_receiver->receive(Receiver::s_no_block), ReceiveTimeoutExpired, [&](ReceiveTimeoutExpired e) {
+      TLOG() << e.what();
+    return std::string(e.what()).find("Unable to receive within timeout period") != std::string::npos;
+    });
 }
 BOOST_AUTO_TEST_SUITE_END()
