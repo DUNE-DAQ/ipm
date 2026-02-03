@@ -30,7 +30,7 @@ public:
   {
   }
 
-  std::string connect_for_sends(const nlohmann::json& /* connection_info */) override
+  std::string connect_for_sends(const ConnectionInfo& /* connection_info */) override
   {
     m_can_send = true;
     return "";
@@ -76,8 +76,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_sender.can_send());
 
-  nlohmann::json j;
-  the_sender.connect_for_sends(j);
+  Sender::ConnectionInfo ci;
+  the_sender.connect_for_sends(ci);
   BOOST_REQUIRE(the_sender.can_send());
 
   BOOST_REQUIRE_NO_THROW(the_sender.send(random_data.data(), random_data.size(), Sender::s_no_block));
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 BOOST_AUTO_TEST_CASE(BadInput)
 {
   SenderImpl the_sender;
-  nlohmann::json j;
-  the_sender.connect_for_sends(j);
+  Sender::ConnectionInfo ci;
+  the_sender.connect_for_sends(ci);
 
   const char* bad_bytes = nullptr;
   BOOST_REQUIRE_EXCEPTION(the_sender.send(bad_bytes, 10, Sender::s_no_block),

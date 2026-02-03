@@ -5,7 +5,6 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(ers)
 find_dependency(cetlib)
-find_dependency(nlohmann_json)
 find_dependency(cppzmq)
 find_dependency(logging)
 find_dependency(utilities)

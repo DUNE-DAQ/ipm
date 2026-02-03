@@ -39,7 +39,7 @@ public:
   }
   void unregister_callback() override { m_callback_adapter.clear_callback(); }
 
-  std::string connect_for_receives(const nlohmann::json& /* connection_info */) override
+  std::string connect_for_receives(const ConnectionInfo& /* connection_info */) override
   {
     m_can_receive = true;
     m_callback_adapter.set_receiver(this);
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_receiver.can_receive());
 
-  nlohmann::json j;
-  the_receiver.connect_for_receives(j);
+  Receiver::ConnectionInfo ci;
+  the_receiver.connect_for_receives(ci);
   BOOST_REQUIRE(the_receiver.can_receive());
 
   BOOST_REQUIRE_NO_THROW(the_receiver.receive(Receiver::s_no_block));
@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE(Callback)
 {
   ReceiverImpl the_receiver;
 
-  nlohmann::json j;
-  the_receiver.connect_for_receives(j);
+  Receiver::ConnectionInfo ci;
+  the_receiver.connect_for_receives(ci);
   BOOST_REQUIRE(the_receiver.can_receive());
 
   std::atomic<size_t> callback_call_count = 0;

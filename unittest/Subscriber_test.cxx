@@ -35,7 +35,7 @@ public:
   {
   }
 
-  std::string connect_for_receives(const nlohmann::json& /* connection_info */) override
+  std::string connect_for_receives(const ConnectionInfo& /* connection_info */) override
   {
     m_can_receive = true;
     m_callback_adapter.set_receiver(this);
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(StatusChecks)
 
   BOOST_REQUIRE(!the_subscriber.can_receive());
 
-  nlohmann::json j;
-  the_subscriber.connect_for_receives(j);
+  Receiver::ConnectionInfo ci;
+  the_subscriber.connect_for_receives(ci);
   BOOST_REQUIRE(the_subscriber.can_receive());
 
   the_subscriber.subscribe("TEST");
@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE(Callback)
 {
   SubscriberImpl the_subscriber;
 
-  nlohmann::json j;
-  the_subscriber.connect_for_receives(j);
+  Receiver::ConnectionInfo ci;
+  the_subscriber.connect_for_receives(ci);
   BOOST_REQUIRE(the_subscriber.can_receive());
 
   std::atomic<size_t> callback_call_count = 0;

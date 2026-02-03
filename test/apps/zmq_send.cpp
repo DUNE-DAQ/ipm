@@ -62,7 +62,8 @@ main(int argc, char* argv[])
   }
 
   std::shared_ptr<dunedaq::ipm::Sender> sender = dunedaq::ipm::make_ipm_sender("ZmqSender");
-  sender->connect_for_sends({ { "connection_string", conString } });
+  dunedaq::ipm::Sender::ConnectionInfo conn_info("zmq_send", conString);
+  sender->connect_for_sends(conn_info);
 
   std::vector<char> message(packetSize, 0);
   *reinterpret_cast<uint32_t*>(message.data()) = id; // NOLINT

@@ -53,7 +53,8 @@ main(int argc, char* argv[])
 
   // Receiver side
   std::shared_ptr<Receiver> receiver = make_ipm_receiver("ZmqReceiver");
-  receiver->connect_for_receives({ { "connection_string", conString } });
+  Receiver::ConnectionInfo conn_info("zmq_recv", conString);
+  receiver->connect_for_receives(conn_info);
 
   std::map<uint32_t, uint32_t> last_received_sequence; // NOLINT(build/unsigned)
   int64_t first_latency = 0;
