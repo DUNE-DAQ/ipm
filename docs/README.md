@@ -1,3 +1,6 @@
+
+_JCF, Feb-4-2026: if you see this line on develop, please contact me, it means I screwed up_
+
 # ipm
 Inter-Process Messaging
 
