@@ -39,10 +39,11 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json config_json;
-  config_json["connection_string"] = "inproc://sendreceive";
-  the_sender->connect_for_sends(config_json);
-  the_receiver->connect_for_receives(config_json);
+  Sender::ConnectionInfo sender_config("test_sender", "inproc://sendreceive");
+  Receiver::ConnectionInfo receiver_config("test_receiver", "inproc://sendreceive");
+
+  the_sender->connect_for_sends(sender_config);
+  the_receiver->connect_for_receives(receiver_config);
 
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
@@ -85,10 +86,10 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json config_json;
-  config_json["connection_string"] = "inproc://callback";
-  the_sender->connect_for_sends(config_json);
-  the_receiver->connect_for_receives(config_json);
+  Sender::ConnectionInfo sender_config("test_sender", "inproc://callback");
+  Receiver::ConnectionInfo receiver_config("test_receiver", "inproc://callback");
+  the_sender->connect_for_sends(sender_config);
+  the_receiver->connect_for_receives(receiver_config);
 
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
@@ -141,15 +142,12 @@ BOOST_AUTO_TEST_CASE(MultiplePublishers)
   auto second_publisher = make_ipm_sender("ZmqPublisher");
   auto the_subscriber = make_ipm_subscriber("ZmqSubscriber");
 
-  nlohmann::json first_json;
-  nlohmann::json second_json;
-  nlohmann::json sub_json;
-  first_json["connection_string"] = "inproc://foo";
-  first_publisher->connect_for_sends(first_json);
-  second_json["connection_string"] = "inproc://bar";
-  second_publisher->connect_for_sends(second_json);
-  sub_json["connection_strings"] = { "inproc://foo", "inproc://bar" };
-  the_subscriber->connect_for_receives(sub_json);
+  Sender::ConnectionInfo first_sender_config("test_sender", "inproc://foo");
+  Sender::ConnectionInfo second_sender_config("test_sender", "inproc://bar");
+  Receiver::ConnectionInfo receiver_config("test_receiver", "", { "inproc://foo", "inproc://bar" });
+  first_publisher->connect_for_sends(first_sender_config);
+  second_publisher->connect_for_sends(second_sender_config);
+  the_subscriber->connect_for_receives(receiver_config);
 
   the_subscriber->subscribe("testTopic");
 

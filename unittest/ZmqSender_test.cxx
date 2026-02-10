@@ -35,23 +35,23 @@ BOOST_AUTO_TEST_CASE(Errors)
   BOOST_CHECK(the_sender != nullptr);
   BOOST_CHECK(!the_sender->can_send());
 
-  nlohmann::json config_json;
+  Sender::ConnectionInfo config("ZmqSenderTestConn");
 
-  config_json["connection_string"] = "not a uri";
+  config.connection_string = "not a uri";
   BOOST_CHECK_EXCEPTION(
-    the_sender->connect_for_sends(config_json), dunedaq::utilities::InvalidUri, [&](dunedaq::utilities::InvalidUri e) {
+    the_sender->connect_for_sends(config), dunedaq::utilities::InvalidUri, [&](dunedaq::utilities::InvalidUri e) {
       return std::string(e.what()).find("not a uri") != std::string::npos;
     });
   BOOST_CHECK(!the_sender->can_send());
 
-  config_json["connection_string"] = "tcp://thishostddoesnotexist";
-  BOOST_CHECK_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "tcp://thishostddoesnotexist";
+  BOOST_CHECK_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("thishostddoesnotexist") != std::string::npos;
   });
   BOOST_CHECK(!the_sender->can_send());
 
-  config_json["connection_string"] = "badproto://default";
-  BOOST_CHECK_EXCEPTION(the_sender->connect_for_sends(config_json), ZmqOperationError, [&](ZmqOperationError e) {
+  config.connection_string = "badproto://default";
+  BOOST_CHECK_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("badproto") != std::string::npos;
   });
   BOOST_CHECK(!the_sender->can_send());

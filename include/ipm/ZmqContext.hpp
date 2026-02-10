@@ -50,9 +50,9 @@ namespace dunedaq {
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqOperationError,
-                  "An exception occured while calling " << operation << " on the ZMQ " << direction << " socket: "
-                                                        << what << " (connection_string: " << connection_string << ")",
-                  ((std::string)operation)((std::string)direction)((const char*)what)(
+                  connection_name << ": An exception occured while calling " << operation << " on the ZMQ " << direction
+                                  << " socket: " << what << " (connection_string: " << connection_string << ")",
+                  ((std::string)connection_name)((std::string)operation)((std::string)direction)((const char*)what)(
                     (std::string)connection_string)) // NOLINT
                                                      /// @endcond LCOV_EXCL_STOP
 
@@ -63,10 +63,11 @@ ERS_DECLARE_ISSUE(ipm,
  * @param topic Send topic
  * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
  */
-ERS_DECLARE_ISSUE(ipm,
+ERS_DECLARE_ISSUE(
+  ipm,
                   ZmqSendError,
-                  "An exception occurred while sending " << N << " bytes to " << topic << ": " << what,
-                  ((const char*)what)((int)N)((std::string)topic)) // NOLINT
+  connection_name << ": An exception occurred while sending " << N << " bytes to " << topic << ": " << what,
+  ((std::string)connection_name)((const char*)what)((int)N)((std::string)topic)) // NOLINT
                                                                    /// @endcond LCOV_EXCL_STOP
 
 /**
@@ -77,8 +78,8 @@ ERS_DECLARE_ISSUE(ipm,
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqReceiveError,
-                  "An exception occured while receiving " << which << ": " << what,
-                  ((const char*)what)((const char*)which)) // NOLINT
+                  connection_name << ": An exception occured while receiving " << which << ": " << what,
+                  ((std::string)connection_name)((const char*)what)((const char*)which)) // NOLINT
                                                            /// @endcond LCOV_EXCL_STOP
 
 /**
@@ -89,8 +90,8 @@ ERS_DECLARE_ISSUE(ipm,
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqSubscribeError,
-                  "An execption occured while subscribing to " << topic << ": " << what,
-                  ((const char*)what)((std::string)topic)) // NOLINT
+                  connection_name << ": An execption occured while subscribing to " << topic << ": " << what,
+                  ((std::string)connection_name)((const char*)what)((std::string)topic)) // NOLINT
 /// @endcond LCOV_EXCL_STOP
 
 /**
@@ -101,8 +102,8 @@ ERS_DECLARE_ISSUE(ipm,
  */
 ERS_DECLARE_ISSUE(ipm,
                   ZmqUnsubscribeError,
-                  "An execption occured while unsubscribing from " << topic << ": " << what,
-                  ((const char*)what)((std::string)topic)) // NOLINT
+                  connection_name << ": An execption occured while unsubscribing from " << topic << ": " << what,
+                  ((std::string)connection_name)((const char*)what)((std::string)topic)) // NOLINT
 /// @endcond LCOV_EXCL_STOP
 
 namespace ipm {

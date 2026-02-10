@@ -38,44 +38,57 @@ public:
         try {
           m_socket.disconnect(conn_string);
         } catch (zmq::error_t const& err) {
-          ers::error(ZmqOperationError(ERS_HERE, "disconnect", "receive", err.what(), conn_string));
+          ers::error(ZmqOperationError(
+            ERS_HERE, m_connection_info.connection_name, "disconnect", "receive", err.what(), conn_string));
         }
       }
     }
     m_socket.close();
   }
 
-  std::string connect_for_receives(const nlohmann::json& connection_info) override
+  std::string connect_for_receives(const ConnectionInfo& connection_info) override
   {
+    m_connection_info = connection_info;
     std::set<std::string> new_connection_strings;
-    if (connection_info.contains("connection_string")) {
-      if (m_connection_strings.count(connection_info.value<std::string>("connection_string", "")) == 0)
-        new_connection_strings.insert(connection_info.value<std::string>("connection_string", ""));
+    if (connection_info.connection_string != "") {
+      new_connection_strings.insert(connection_info.connection_string);
     }
 
-    for (auto& conn_string : connection_info.value<std::vector<std::string>>("connection_strings", {})) {
+    for (auto& conn_string : connection_info.connection_strings) {
       if (m_connection_strings.count(conn_string) == 0)
         new_connection_strings.insert(conn_string);
     }
 
     if (m_connection_strings.size() == 0 && new_connection_strings.size() == 0) {
-      throw ZmqOperationError(ERS_HERE, "resolve connections", "receive", "No valid connection strings passed", "");
+      throw ZmqOperationError(ERS_HERE,
+                              m_connection_info.connection_name,
+                              "resolve connections",
+                              "receive",
+                              "No valid connection strings passed",
+                              "");
     }
 
     if (!m_socket_connected) {
       try {
         m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
       } catch (zmq::error_t const& err) {
-        throw ZmqOperationError(ERS_HERE, "set timeout", "receive", err.what(), *m_connection_strings.begin());
+        throw ZmqOperationError(ERS_HERE,
+                                m_connection_info.connection_name,
+                                "set timeout",
+                                "receive",
+                                err.what(),
+                                *m_connection_strings.begin());
       }
     }
     for (auto& conn_string : new_connection_strings) {
       try {
-        TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << conn_string;
+        TLOG_DEBUG(TLVL_CONNECTIONSTRING)
+          << m_connection_info.connection_name << ": Connection String is " << conn_string;
         m_socket.connect(conn_string);
         m_connection_strings.insert(conn_string);
       } catch (zmq::error_t const& err) {
-        ers::error(ZmqOperationError(ERS_HERE, "connect", "receive", err.what(), conn_string));
+        ers::error(ZmqOperationError(
+          ERS_HERE, m_connection_info.connection_name, "connect", "receive", err.what(), conn_string));
       }
     }
     m_socket_connected = true;
@@ -94,7 +107,7 @@ public:
     try {
       m_socket.set(zmq::sockopt::subscribe, topic);
     } catch (zmq::error_t const& err) {
-      throw ZmqSubscribeError(ERS_HERE, err.what(), topic);
+      throw ZmqSubscribeError(ERS_HERE, m_connection_info.connection_name, err.what(), topic);
     }
   }
   void unsubscribe(std::string const& topic) override
@@ -102,7 +115,7 @@ public:
     try {
       m_socket.set(zmq::sockopt::unsubscribe, topic);
     } catch (zmq::error_t const& err) {
-      throw ZmqUnsubscribeError(ERS_HERE, err.what(), topic);
+      throw ZmqUnsubscribeError(ERS_HERE, m_connection_info.connection_name, err.what(), topic);
     }
   }
 
@@ -124,15 +137,16 @@ protected:
     do {
 
       try {
-        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_HDR) << "Subscriber: Going to receive header";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_HDR) << m_connection_info.connection_name << ": Going to receive header";
         res = m_socket.recv(hdr);
         TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_HDR_2)
-          << "Subscriber: Recv res=" << res.value_or(0) << " for header (hdr.size() == " << hdr.size() << ")";
+          << m_connection_info.connection_name << ": Recv res=" << res.value_or(0)
+          << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
-        throw ZmqReceiveError(ERS_HERE, err.what(), "header");
+        throw ZmqReceiveError(ERS_HERE, m_connection_info.connection_name, err.what(), "header");
       }
       if (res || hdr.more()) {
-        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_DATA) << "Subscriber: Going to receive data";
+        TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_DATA) << m_connection_info.connection_name << ": Going to receive data";
         output.metadata.resize(hdr.size());
         memcpy(&output.metadata[0], hdr.data(), hdr.size());
 
@@ -141,10 +155,11 @@ protected:
         try {
           res = m_socket.recv(msg);
         } catch (zmq::error_t const& err) {
-          throw ZmqReceiveError(ERS_HERE, err.what(), "data");
+          throw ZmqReceiveError(ERS_HERE, m_connection_info.connection_name, err.what(), "data");
         }
         TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_DATA_2)
-          << "Subscriber: Recv res=" << res.value_or(0) << " for data (msg.size() == " << msg.size() << ")";
+          << m_connection_info.connection_name << ": Recv res=" << res.value_or(0)
+          << " for data (msg.size() == " << msg.size() << ")";
         output.data.resize(msg.size());
         memcpy(&output.data[0], msg.data(), msg.size());
       } else if (timeout > duration_t::zero()) {
@@ -154,11 +169,12 @@ protected:
              res.value_or(0) == 0);
 
     if (res.value_or(0) == 0 && !no_tmoexcept_mode) {
-      throw ReceiveTimeoutExpired(ERS_HERE, timeout.count());
+      throw ReceiveTimeoutExpired(ERS_HERE, m_connection_info.connection_name, timeout.count());
     }
 
-    TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_END) << "Subscriber: Returning output with metadata size "
-                                            << output.metadata.size() << " and data size " << output.data.size();
+    TLOG_DEBUG(TLVL_ZMQSUBSCRIBER_RECV_END)
+      << m_connection_info.connection_name << ": Returning output with metadata size " << output.metadata.size()
+      << " and data size " << output.data.size();
     return output;
   }
 

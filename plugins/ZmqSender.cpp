@@ -36,11 +36,12 @@ public:
     if (can_send()) {
       for (auto& sock : m_sockets) {
         try {
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << "Setting socket HWM to zero";
+          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << m_connection_info.connection_name << ": Setting socket HWM to one";
           sock->socket.set(zmq::sockopt::sndhwm, 1);
 
           TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
-            << "Waiting up to 10s for socket to become writable before disconnecting";
+            << m_connection_info.connection_name
+            << ": Waiting up to 10s for socket to become writable before disconnecting";
           auto start_time = std::chrono::steady_clock::now();
           while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time)
                    .count() < 10000) {
@@ -50,12 +51,15 @@ public:
             }
             usleep(1000);
           }
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << "Disconnecting socket from " << sock->connection_string;
+
+          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
+            << m_connection_info.connection_name << ": Disconnecting socket from " << sock->connection_string;
 
           sock->socket.disconnect(sock->connection_string);
           sock->socket.close();
         } catch (zmq::error_t const& err) {
-          ers::error(ZmqOperationError(ERS_HERE, "disconnect", "send", err.what(), sock->connection_string));
+          ers::error(ZmqOperationError(
+            ERS_HERE, m_connection_info.connection_name, "disconnect", "send", err.what(), sock->connection_string));
         }
       }
       m_sockets.clear();
@@ -64,15 +68,14 @@ public:
 
   bool can_send() const noexcept override { return m_sockets.size() > 0; }
 
-  std::string connect_for_sends(const nlohmann::json& connection_info) override
+  std::string connect_for_sends(const ConnectionInfo& connection_info) override
   {
-    auto send_endpoints = connection_info.value<std::vector<std::string>>("send_endpoints", {});
-    auto hwm = connection_info.value<int>("capacity", 0);
-    m_connection_string = connection_info.value<std::string>("connection_string", "inproc://default");
 
-    if (send_endpoints.size() > 0) {
-      auto base_uri = utilities::ZmqUri(m_connection_string);
-      for (auto& endpoint : send_endpoints) {
+    m_connection_info = connection_info;
+
+    if (connection_info.send_endpoints.size() > 0) {
+      auto base_uri = utilities::ZmqUri(connection_info.connection_string);
+      for (auto& endpoint : connection_info.send_endpoints) {
         auto connection_uri = base_uri;
 
         if (endpoint.find(":") != std::string::npos) {
@@ -81,12 +84,12 @@ public:
         } else {
           connection_uri.endpoint_host = endpoint;
         }
-        create_and_connect_socket(connection_uri, hwm);
+        create_and_connect_socket(connection_uri, connection_info.capacity);
       }
     } else {
-      create_and_connect_socket(utilities::ZmqUri(m_connection_string), hwm);
+      create_and_connect_socket(utilities::ZmqUri(connection_info.connection_string), connection_info.capacity);
     }
-    return m_connection_string;
+    return m_connection_info.connection_string;
   }
 
 protected:
@@ -97,7 +100,7 @@ protected:
              bool no_tmoexcept_mode) override
   {
     TLOG_DEBUG(TLVL_ZMQSENDER_SEND_START)
-      << "Endpoint " << m_connection_string << ": Starting send of " << N << " bytes";
+      << m_connection_info.connection_name << ": Starting send of " << N << " bytes";
     auto start_time = std::chrono::steady_clock::now();
     zmq::send_result_t res{};
 
@@ -109,11 +112,11 @@ protected:
       try {
         res = socket->socket.send(topic_msg, zmq::send_flags::sndmore);
       } catch (zmq::error_t const& err) {
-        throw ZmqSendError(ERS_HERE, err.what(), topic.size(), topic);
+        throw ZmqSendError(ERS_HERE, m_connection_info.connection_name, err.what(), topic.size(), topic);
       }
 
       if (!res || res != topic.size()) {
-        TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << "Endpoint " << m_connection_string << ": Unable to send message";
+        TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << m_connection_info.connection_name << ": Unable to send message";
         continue;
       }
 
@@ -122,7 +125,7 @@ protected:
         res = socket->socket.send(msg, zmq::send_flags::none);
         socket->bytes_sent += N;
       } catch (zmq::error_t const& err) {
-        throw ZmqSendError(ERS_HERE, err.what(), N, topic);
+        throw ZmqSendError(ERS_HERE, m_connection_info.connection_name, err.what(), N, topic);
       }
 
       if (!res && timeout > duration_t::zero()) {
@@ -131,11 +134,10 @@ protected:
     } while (std::chrono::duration_cast<duration_t>(std::chrono::steady_clock::now() - start_time) < timeout && !res);
 
     if (!res && !no_tmoexcept_mode) {
-      throw SendTimeoutExpired(ERS_HERE, timeout.count());
+      throw SendTimeoutExpired(ERS_HERE, m_connection_info.connection_name, timeout.count());
     }
 
-    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << "Endpoint " << m_connection_string << ": Completed send of " << N
-                                        << " bytes";
+    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << m_connection_info.connection_name << ": Completed send of " << N << " bytes";
     return res && res == N;
   }
 
@@ -151,14 +153,14 @@ private:
     try {
       info->socket.set(zmq::sockopt::sndtimeo, 0); // Return immediately if we can't send
     } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, "set timeout", "send", err.what(), conn_uri);
+      throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "set timeout", "send", err.what(), conn_uri);
     }
 
     if (capacity > 0) {
       try {
         info->socket.set(zmq::sockopt::sndhwm, capacity);
       } catch (zmq::error_t const& err) {
-        throw ZmqOperationError(ERS_HERE, "set hwm", "send", err.what(), conn_uri);
+        throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "set hwm", "send", err.what(), conn_uri);
       }
     }
 
@@ -166,13 +168,14 @@ private:
     try {
       info->socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
     } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, "set immediate mode", "send", err.what(), conn_uri);
+      throw ZmqOperationError(
+        ERS_HERE, m_connection_info.connection_name, "set immediate mode", "send", err.what(), conn_uri);
     }
 
     try {
       info->socket.connect(conn_uri);
     } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, "connect", "send", err.what(), conn_uri);
+      throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "connect", "send", err.what(), conn_uri);
     }
 
     m_sockets.push_back(info);

@@ -36,18 +36,18 @@ BOOST_AUTO_TEST_CASE(Errors)
   BOOST_REQUIRE(the_subscriber != nullptr);
   BOOST_REQUIRE(!the_subscriber->can_receive());
 
-  nlohmann::json config_json;
+  Receiver::ConnectionInfo config("ZmqSubscriberTestConn");
 
-  config_json["connection_string"] = "not a uri";
-  the_subscriber->connect_for_receives(config_json);
+  config.connection_string = "not a uri";
+  the_subscriber->connect_for_receives(config);
   BOOST_REQUIRE(the_subscriber->can_receive());
 
-  config_json["connection_string"] = "tcp://thishostddoesnotexist";
-  the_subscriber->connect_for_receives(config_json);
+  config.connection_string = "tcp://thishostddoesnotexist";
+  the_subscriber->connect_for_receives(config);
   BOOST_REQUIRE(the_subscriber->can_receive());
 
-  config_json["connection_string"] = "badproto://default";
-  the_subscriber->connect_for_receives(config_json);
+  config.connection_string = "badproto://default";
+  the_subscriber->connect_for_receives(config);
   BOOST_REQUIRE(the_subscriber->can_receive());
 }
 

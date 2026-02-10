@@ -30,9 +30,10 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json empty_json = nlohmann::json::object();
-  the_receiver->connect_for_receives(empty_json);
-  the_sender->connect_for_sends(empty_json);
+  Sender::ConnectionInfo send_info("ZmqSendReceive", "inproc://default");
+  Receiver::ConnectionInfo recv_info("ZmqSendReceive", "inproc://default");
+  the_receiver->connect_for_receives(recv_info);
+  the_sender->connect_for_sends(send_info);
 
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
@@ -59,9 +60,10 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
   BOOST_REQUIRE(the_sender != nullptr);
   BOOST_REQUIRE(!the_sender->can_send());
 
-  nlohmann::json empty_json = nlohmann::json::object();
-  the_receiver->connect_for_receives(empty_json);
-  the_sender->connect_for_sends(empty_json);
+  Sender::ConnectionInfo send_info("ZmqSendReceive-Callbacks", "inproc://default");
+  Receiver::ConnectionInfo recv_info("ZmqSendReceive-Callbacks", "inproc://default");
+  the_receiver->connect_for_receives(recv_info);
+  the_sender->connect_for_sends(send_info);
 
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
