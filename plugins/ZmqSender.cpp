@@ -37,25 +37,25 @@ public:
       for (auto& sock : m_sockets) {
         try {
           TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << "Setting socket HWM to zero";
-          m_socket.set(zmq::sockopt::sndhwm, 1);
+          sock->socket.set(zmq::sockopt::sndhwm, 1);
 
           TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
             << "Waiting up to 10s for socket to become writable before disconnecting";
           auto start_time = std::chrono::steady_clock::now();
           while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time)
                    .count() < 10000) {
-            auto events = m_socket.get(zmq::sockopt::events);
+            auto events = sock->socket.get(zmq::sockopt::events);
             if ((events & ZMQ_POLLOUT) != 0) {
               break;
             }
             usleep(1000);
           }
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << "Disconnecting socket from " << m_connection_string;
+          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << "Disconnecting socket from " << sock->connection_string;
 
-          m_socket.disconnect(m_connection_string);
-          m_socket_connected = false;
+          sock->socket.disconnect(sock->connection_string);
+          sock->socket.close();
         } catch (zmq::error_t const& err) {
-          ers::error(ZmqOperationError(ERS_HERE, "disconnect", "send", err.what(), m_connection_string));
+          ers::error(ZmqOperationError(ERS_HERE, "disconnect", "send", err.what(), sock->connection_string));
         }
       }
       m_sockets.clear();
