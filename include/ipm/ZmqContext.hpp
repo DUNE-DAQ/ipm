@@ -65,10 +65,10 @@ ERS_DECLARE_ISSUE(ipm,
  */
 ERS_DECLARE_ISSUE(
   ipm,
-                  ZmqSendError,
+  ZmqSendError,
   connection_name << ": An exception occurred while sending " << N << " bytes to " << topic << ": " << what,
   ((std::string)connection_name)((const char*)what)((int)N)((std::string)topic)) // NOLINT
-                                                                   /// @endcond LCOV_EXCL_STOP
+                                                                                 /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ while receiving
@@ -80,7 +80,7 @@ ERS_DECLARE_ISSUE(ipm,
                   ZmqReceiveError,
                   connection_name << ": An exception occured while receiving " << which << ": " << what,
                   ((std::string)connection_name)((const char*)what)((const char*)which)) // NOLINT
-                                                           /// @endcond LCOV_EXCL_STOP
+                                                                                         /// @endcond LCOV_EXCL_STOP
 
 /**
  * @brief An ERS Error indicating that an exception was thrown from ZMQ during a subscribe
