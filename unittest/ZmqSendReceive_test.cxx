@@ -25,6 +25,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   auto the_receiver = make_ipm_receiver("ZmqReceiver");
   BOOST_REQUIRE(the_receiver != nullptr);
   BOOST_REQUIRE(!the_receiver->can_receive());
+  BOOST_REQUIRE(!the_receiver->data_pending());
 
   auto the_sender = make_ipm_sender("ZmqSender");
   BOOST_REQUIRE(the_sender != nullptr);
@@ -36,12 +37,16 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   the_sender->connect_for_sends(send_info);
 
   BOOST_REQUIRE(the_receiver->can_receive());
+  BOOST_REQUIRE(!the_receiver->data_pending());
   BOOST_REQUIRE(the_sender->can_send());
 
   std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
 
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block);
+  BOOST_REQUIRE(the_receiver->data_pending());
   auto response = the_receiver->receive(Receiver::s_block);
+  BOOST_REQUIRE(!the_receiver->data_pending());
+
   BOOST_REQUIRE_EQUAL(response.data.size(), 4);
   BOOST_REQUIRE_EQUAL(response.data[0], 'T');
   BOOST_REQUIRE_EQUAL(response.data[1], 'E');

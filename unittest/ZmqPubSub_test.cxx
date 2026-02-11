@@ -48,6 +48,8 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_receiver->can_receive());
   BOOST_REQUIRE(the_sender->can_send());
 
+  BOOST_REQUIRE(!the_receiver->data_pending());
+  
   the_receiver->subscribe("testTopic");
 
   std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
@@ -60,7 +62,9 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
     [&](dunedaq::ipm::ReceiveTimeoutExpired) { return elapsed_time_milliseconds(before_recv) >= 100; });
 
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+  BOOST_REQUIRE(the_receiver->data_pending());
   auto response = the_receiver->receive(Receiver::s_block);
+  BOOST_REQUIRE(!the_receiver->data_pending());
   BOOST_REQUIRE_EQUAL(response.data.size(), 4);
   BOOST_REQUIRE_EQUAL(response.data[0], 'T');
   BOOST_REQUIRE_EQUAL(response.data[1], 'E');
@@ -69,6 +73,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
 
   the_receiver->unsubscribe("testTopic");
   the_sender->send(test_data.data(), test_data.size(), Sender::s_no_block, "testTopic");
+  BOOST_REQUIRE(!the_receiver->data_pending());
   BOOST_REQUIRE_EXCEPTION(
     the_receiver->receive(std::chrono::milliseconds(2000)),
     dunedaq::ipm::ReceiveTimeoutExpired,
@@ -135,6 +140,7 @@ BOOST_AUTO_TEST_CASE(CallbackTest)
   BOOST_REQUIRE_EQUAL(message_received, false);
   auto response = the_receiver->receive(Receiver::s_block);
   BOOST_REQUIRE_EQUAL(response.data.size(), test_data.size());
+  BOOST_REQUIRE(!the_receiver->data_pending());
 }
 
 BOOST_AUTO_TEST_CASE(MultiplePublishers)
@@ -168,6 +174,7 @@ BOOST_AUTO_TEST_CASE(MultiplePublishers)
   BOOST_REQUIRE_EQUAL(response2.data[1], 'E');
   BOOST_REQUIRE_EQUAL(response2.data[2], 'S');
   BOOST_REQUIRE_EQUAL(response2.data[3], 'T');
+  BOOST_REQUIRE(!the_subscriber->data_pending());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
