@@ -119,6 +119,18 @@ public:
     }
   }
 
+  bool data_pending() override
+  {
+    try {
+      auto events = m_socket.get(zmq::sockopt::events);
+      return (events & ZMQ_POLLIN) != 0;
+    } catch (zmq::error_t const& err) {
+      ers::error(
+        ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "get events sockopt", "data_pending", err.what(), *m_connection_strings.begin()));
+    }
+    return false;
+  }
+
   void register_callback(std::function<void(Response&)> callback) override
   {
     m_callback_adapter.set_callback(callback);
