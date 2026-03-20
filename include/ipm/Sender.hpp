@@ -81,7 +81,7 @@ public:
     std::string connection_name{ "" };
     std::string connection_string{ "inproc://default" };
     int capacity{ 0 };
-    std::vector<std::string> send_endpoints{};
+    std::string send_endpoint{ "" };
   };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();

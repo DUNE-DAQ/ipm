@@ -21,74 +21,104 @@ namespace dunedaq::ipm {
 class ZmqSender : public Sender
 {
 public:
-  struct Sockinfo_t
+  ZmqSender()
+    : m_socket(ZmqContext::instance().GetContext(), zmq::socket_type::push)
   {
-    zmq::socket_t socket;
-    size_t bytes_sent{ 0 };
-    std::string connection_string;
-  };
-
-  ZmqSender() {}
+  }
 
   ~ZmqSender()
   {
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
-    if (can_send()) {
-      for (auto& sock : m_sockets) {
-        try {
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << m_connection_info.connection_name << ": Setting socket HWM to one";
-          sock->socket.set(zmq::sockopt::sndhwm, 1);
+    if (m_connection_info.connection_string != "" && m_socket_connected) {
+      try {
+        TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR) << m_connection_info.connection_name << ": Setting socket HWM to one";
+        m_socket.set(zmq::sockopt::sndhwm, 1);
 
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
-            << m_connection_info.connection_name
-            << ": Waiting up to 10s for socket to become writable before disconnecting";
-          auto start_time = std::chrono::steady_clock::now();
-          while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time)
-                   .count() < 10000) {
-            auto events = sock->socket.get(zmq::sockopt::events);
-            if ((events & ZMQ_POLLOUT) != 0) {
-              break;
-            }
-            usleep(1000);
+        TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
+          << m_connection_info.connection_name
+          << ": Waiting up to 10s for socket to become writable before disconnecting";
+        auto start_time = std::chrono::steady_clock::now();
+        while (
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() <
+          10000) {
+          auto events = m_socket.get(zmq::sockopt::events);
+          if ((events & ZMQ_POLLOUT) != 0) {
+            break;
           }
-
-          TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
-            << m_connection_info.connection_name << ": Disconnecting socket from " << sock->connection_string;
-
-          sock->socket.disconnect(sock->connection_string);
-          sock->socket.close();
-        } catch (zmq::error_t const& err) {
-          ers::error(ZmqOperationError(
-            ERS_HERE, m_connection_info.connection_name, "disconnect", "send", err.what(), sock->connection_string));
+          usleep(1000);
         }
+        TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
+          << m_connection_info.connection_name << ": Disconnecting socket from " << m_connection_info.connection_string;
+
+        m_socket.disconnect(m_connection_info.connection_string);
+        m_socket_connected = false;
+      } catch (zmq::error_t const& err) {
+        ers::error(ZmqOperationError(ERS_HERE,
+                                     m_connection_info.connection_name,
+                                     "disconnect",
+                                     "send",
+                                     err.what(),
+                                     m_connection_info.connection_string));
       }
-      m_sockets.clear();
     }
+    m_socket.close();
   }
 
-  bool can_send() const noexcept override { return m_sockets.size() > 0; }
-
+  bool can_send() const noexcept override { return m_socket_connected; }
   std::string connect_for_sends(const ConnectionInfo& connection_info) override
   {
-
     m_connection_info = connection_info;
+    auto connection_string = m_connection_info.connection_string;
+    auto capacity = m_connection_info.capacity;
+    auto base_uri = utilities::ZmqUri(connection_info.connection_string);
 
-    if (connection_info.send_endpoints.size() > 0) {
-      auto base_uri = utilities::ZmqUri(connection_info.connection_string);
-      for (auto& endpoint : connection_info.send_endpoints) {
+    if (connection_info.send_endpoint != "") {
         auto connection_uri = base_uri;
 
-        if (endpoint.find(":") != std::string::npos) {
-          connection_uri.endpoint_host = endpoint.substr(0, endpoint.find(":"));
-          connection_uri.endpoint_port = endpoint.substr(endpoint.find(":") + 1);
+        if (connection_info.send_endpoint.find(":") != std::string::npos) {
+          connection_uri.endpoint_host =
+            connection_info.send_endpoint.substr(0, connection_info.send_endpoint.find(":"));
+          connection_uri.endpoint_port =
+            connection_info.send_endpoint.substr(connection_info.send_endpoint.find(":") + 1);
         } else {
-          connection_uri.endpoint_host = endpoint;
+          connection_uri.endpoint_host = connection_info.send_endpoint;
         }
-        create_and_connect_socket(connection_uri, connection_info.capacity);
-      }
-    } else {
-      create_and_connect_socket(utilities::ZmqUri(connection_info.connection_string), connection_info.capacity);
+        connection_string = connection_uri.to_string();
     }
+
+    TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << connection_string;
+    try {
+      m_socket.set(zmq::sockopt::sndtimeo, 0); // Return immediately if we can't send
+    } catch (zmq::error_t const& err) {
+      throw ZmqOperationError(
+        ERS_HERE, m_connection_info.connection_name, "set timeout", "send", err.what(), connection_string);
+    }
+
+    if (capacity > 0) {
+      try {
+        m_socket.set(zmq::sockopt::sndhwm, capacity);
+      } catch (zmq::error_t const& err) {
+        throw ZmqOperationError(
+          ERS_HERE, m_connection_info.connection_name, "set hwm", "send", err.what(), connection_string);
+      }
+    }
+
+    try {
+      m_socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
+    } catch (zmq::error_t const& err) {
+      throw ZmqOperationError(
+        ERS_HERE, m_connection_info.connection_name, "set immediate mode", "send", err.what(), connection_string);
+    }
+
+    try {
+      m_socket.connect(connection_string);
+      m_connection_info.connection_string = m_socket.get(zmq::sockopt::last_endpoint);
+      m_socket_connected = true;
+    } catch (zmq::error_t const& err) {
+      throw ZmqOperationError(ZmqOperationError(
+        ERS_HERE, m_connection_info.connection_name, "connect", "send", err.what(), connection_string));
+    }
+
     return m_connection_info.connection_string;
   }
 
@@ -104,13 +134,11 @@ protected:
     auto start_time = std::chrono::steady_clock::now();
     zmq::send_result_t res{};
 
-    auto socket = get_socket();
-
     do {
 
       zmq::message_t topic_msg(topic.c_str(), topic.size());
       try {
-        res = socket->socket.send(topic_msg, zmq::send_flags::sndmore);
+        res = m_socket.send(topic_msg, zmq::send_flags::sndmore);
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, m_connection_info.connection_name, err.what(), topic.size(), topic);
       }
@@ -122,8 +150,7 @@ protected:
 
       zmq::message_t msg(message, N);
       try {
-        res = socket->socket.send(msg, zmq::send_flags::none);
-        socket->bytes_sent += N;
+        res = m_socket.send(msg, zmq::send_flags::none);
       } catch (zmq::error_t const& err) {
         throw ZmqSendError(ERS_HERE, m_connection_info.connection_name, err.what(), N, topic);
       }
@@ -142,66 +169,8 @@ protected:
   }
 
 private:
-  void create_and_connect_socket(utilities::ZmqUri connection_uri, int capacity)
-  {
-    auto conn_uri = connection_uri.to_string();
-    std::shared_ptr<Sockinfo_t> info = std::make_shared<Sockinfo_t>();
-    info->socket = zmq::socket_t(ZmqContext::instance().GetContext(), zmq::socket_type::push);
-    info->bytes_sent = 0;
-    info->connection_string = conn_uri;
-
-    try {
-      info->socket.set(zmq::sockopt::sndtimeo, 0); // Return immediately if we can't send
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "set timeout", "send", err.what(), conn_uri);
-    }
-
-    if (capacity > 0) {
-      try {
-        info->socket.set(zmq::sockopt::sndhwm, capacity);
-      } catch (zmq::error_t const& err) {
-        throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "set hwm", "send", err.what(), conn_uri);
-      }
-    }
-
-    TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << conn_uri;
-    try {
-      info->socket.set(zmq::sockopt::immediate, 1); // Don't queue messages to incomplete connections
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(
-        ERS_HERE, m_connection_info.connection_name, "set immediate mode", "send", err.what(), conn_uri);
-    }
-
-    try {
-      info->socket.connect(conn_uri);
-    } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name, "connect", "send", err.what(), conn_uri);
-    }
-
-    m_sockets.push_back(info);
-  }
-
-  std::shared_ptr<Sockinfo_t> get_socket()
-  {
-    // Typical case, so don't iterate
-    if (m_sockets.size() == 1) {
-      return m_sockets.front();
-    }
-    size_t min_sent = -1;
-    std::shared_ptr<Sockinfo_t> sock = nullptr;
-
-    for (auto& sock_info : m_sockets) {
-      if (sock_info->bytes_sent < min_sent) {
-        min_sent = sock_info->bytes_sent;
-        sock = sock_info;
-      }
-    }
-
-    return sock;
-  }
-
-  std::vector<std::shared_ptr<Sockinfo_t>> m_sockets;
-  std::string m_connection_string;
+  zmq::socket_t m_socket;
+  bool m_socket_connected{ false };
 };
 
 } // namespace dunedaq::ipm
