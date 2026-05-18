@@ -62,6 +62,8 @@ There is an asymmetry between `send` and `receive`, where `send` takes a `void*`
 
 ![Class Diagrams](https://github.com/DUNE-DAQ/ipm/raw/develop/docs/ipm.png)
 
+[This link is intentionally broken](https://github.com/DUNE-DAQ/ipm/raw/develop/docs/does_not_exist.md)
+
 ### ZeroMQ Configuration Variables
 
 Currently, `ZmqContext.hpp` has two environment variables used to configure ZeroMQ within each application:
