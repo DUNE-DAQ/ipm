@@ -26,8 +26,11 @@ dunedaq::ipm::Receiver::receive(const duration_t& timeout, message_size_t bytes,
     }
   }
 
-  m_bytes += message.data.size();
-  ++m_messages;
+  // 18-May-2026, KAB: only increment the opmon counters if a non-empty message was received
+  if (message.data.size() > 0) {
+    m_bytes += message.data.size();
+    ++m_messages;
+  }
 
   return message;
 }
