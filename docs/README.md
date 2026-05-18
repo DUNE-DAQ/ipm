@@ -1,7 +1,4 @@
 # ipm
-
-This line is to re-trigger the workflow
-
 Inter-Process Messaging
 
 The IPM library provides the low-level library for for sending messages between DUNE DAQ processes. IPM deals with messages consisting of arrays of bytes: higher-level concepts such as object serialization/deserialization will be handled by other libraries and processes building on IPM.
