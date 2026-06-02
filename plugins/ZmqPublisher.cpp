@@ -31,22 +31,6 @@ public:
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (m_connection_info.connection_string != "" && m_socket_connected) {
       try {
-        TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR) << m_connection_info.connection_name << ": Setting socket HWM to zero";
-        m_socket.set(zmq::sockopt::sndhwm, 1);
-
-        TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR)
-          << m_connection_info.connection_name
-          << ": Waiting up to 10s for socket to become writable before disconnecting";
-        auto start_time = std::chrono::steady_clock::now();
-        while (
-          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() <
-          10000) {
-          auto events = m_socket.get(zmq::sockopt::events);
-          if ((events & ZMQ_POLLOUT) != 0) {
-            break;
-          }
-          usleep(1000);
-        }
         TLOG_DEBUG(TLVL_ZMQPUBLISHER_DESTRUCTOR)
           << m_connection_info.connection_name << ": Disconnecting socket from " << m_connection_info.connection_string;
 
