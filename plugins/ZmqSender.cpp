@@ -11,6 +11,7 @@
 #include "ipm/ZmqContext.hpp"
 
 #include "logging/Logging.hpp"
+#include "utilities/get_artificial_delay_value.hpp"
 #include "zmq.hpp"
 
 #include <string>
@@ -33,6 +34,13 @@ public:
         TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
           << m_connection_info.connection_name << ": Disconnecting socket from " << m_connection_info.connection_string;
 
+        // the sleep statement in this block of code is for testing purposes only!
+        std::vector<std::string> delay_value_key_list = {"~ZmqSender", m_connection_info.connection_name};
+        size_t delay_usec = utilities::get_artificial_delay_value(delay_value_key_list);
+        if (delay_usec > 0) {
+          ers::warning(ArtificialDelay(ERS_HERE, delay_usec, "destructing", "ZmqSender", m_connection_info.connection_name));
+          usleep(delay_usec);
+        }
 
         m_socket.disconnect(m_connection_info.connection_string);
         m_socket_connected = false;
