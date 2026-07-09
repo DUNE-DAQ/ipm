@@ -45,11 +45,7 @@ ERS_DECLARE_ISSUE(ipm,
                   SendTimeoutExpired,
                   connection_name << ": Unable to send within timeout period (timeout period was " << timeout << " milliseconds)",
                   ((std::string)connection_name)((int)timeout)) // NOLINT
-ERS_DECLARE_ISSUE(ipm,
-                  ArtificialDelay,
-                  "An artificial delay of " << delay << " usec is being introduced before "
-                  << action << " " << object << " " << identifier,
-                  ((size_t)delay)((std::string)action)((std::string)object)((std::string)identifier))
+
 // Reenable coverage collection LCOV_EXCL_STOP
 } // namespace dunedaq
 
