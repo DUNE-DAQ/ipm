@@ -33,7 +33,6 @@ public:
         TLOG_DEBUG(TLVL_ZMQSENDER_DESTRUCTOR)
           << m_connection_info.connection_name << ": Disconnecting socket from " << m_connection_info.connection_string;
 
-
         m_socket.disconnect(m_connection_info.connection_string);
         m_socket_connected = false;
       } catch (zmq::error_t const& err) {
@@ -128,6 +127,7 @@ protected:
       }
 
       if (!res || res != topic.size()) {
+        usleep(1000);
         TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << m_connection_info.connection_name << ": Unable to send message";
         continue;
       }
@@ -148,8 +148,7 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, m_connection_info.connection_name, timeout.count());
     }
 
-    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << m_connection_info.connection_name << ": Completed send of " << N
-                                        << " bytes";
+    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << m_connection_info.connection_name << ": Completed send of " << N << " bytes";
     return res && res == N;
   }
 
