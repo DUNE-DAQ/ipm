@@ -35,8 +35,8 @@ public:
           << m_connection_info.connection_name << ": Disconnecting socket from " << m_connection_info.connection_string;
 
         // 09-Jul-2026, this configurable delay is for testing purposes only
-        utilities::DelayManager::get()->maybe_delay("~ZmqSender", "ZmqSender destructor for connection",
-                                                    m_connection_info.connection_name);
+        utilities::DelayManager::get()->maybe_delay(
+          "~ZmqSender", "ZmqSender destructor for connection " + m_connection_info.connection_name);
 
         m_socket.disconnect(m_connection_info.connection_string);
         m_socket_connected = false;
@@ -152,8 +152,7 @@ protected:
       throw SendTimeoutExpired(ERS_HERE, m_connection_info.connection_name, timeout.count());
     }
 
-    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << m_connection_info.connection_name << ": Completed send of " << N
-                                        << " bytes";
+    TLOG_DEBUG(TLVL_ZMQSENDER_SEND_END) << m_connection_info.connection_name << ": Completed send of " << N << " bytes";
     return res && res == N;
   }
 
