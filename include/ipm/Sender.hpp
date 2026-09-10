@@ -43,7 +43,8 @@ ERS_DECLARE_ISSUE(ipm,
                   ((std::string)connection_name))
 ERS_DECLARE_ISSUE(ipm,
                   SendTimeoutExpired,
-                  connection_name << ": Unable to send within timeout period (timeout period was " << timeout << " milliseconds)",
+                  connection_name << ": Unable to send within timeout period (timeout period was " << timeout
+                                  << " milliseconds)",
                   ((std::string)connection_name)((int)timeout)) // NOLINT
 
 // Reenable coverage collection LCOV_EXCL_STOP
@@ -80,6 +81,7 @@ public:
     std::string connection_name{ "" };
     std::string connection_string{ "inproc://default" };
     int capacity{ 0 };
+    std::string send_endpoint{ "" };
   };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();

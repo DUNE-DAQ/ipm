@@ -64,9 +64,10 @@ BOOST_AUTO_TEST_CASE(Errors)
   config.connection_name = "timeout_test";
   the_receiver->connect_for_receives(config);
   BOOST_REQUIRE(the_receiver->can_receive());
-  BOOST_REQUIRE_EXCEPTION(the_receiver->receive(Receiver::s_no_block), ReceiveTimeoutExpired, [&](ReceiveTimeoutExpired e) {
+  BOOST_REQUIRE_EXCEPTION(
+    the_receiver->receive(Receiver::s_no_block), ReceiveTimeoutExpired, [&](ReceiveTimeoutExpired e) {
       TLOG() << e.what();
-    return std::string(e.what()).find("Unable to receive within timeout period") != std::string::npos;
+      return std::string(e.what()).find("Unable to receive within timeout period") != std::string::npos;
     });
 }
 BOOST_AUTO_TEST_SUITE_END()

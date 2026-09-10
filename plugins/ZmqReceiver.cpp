@@ -53,7 +53,8 @@ public:
     try {
       m_socket.set(zmq::sockopt::rcvtimeo, 0); // Return immediately if we can't receive
     } catch (zmq::error_t const& err) {
-      throw ZmqOperationError(ERS_HERE, m_connection_info.connection_name,
+      throw ZmqOperationError(ERS_HERE,
+                              m_connection_info.connection_name,
                               "set timeout",
                               "receive",
                               err.what(),
@@ -94,7 +95,8 @@ public:
                               m_connection_info.connection_string);
     }
     for (auto& connection_string : resolved) {
-      TLOG_DEBUG(TLVL_CONNECTIONSTRING) << m_connection_info.connection_name << ": Connection String is " << connection_string;
+      TLOG_DEBUG(TLVL_CONNECTIONSTRING) << m_connection_info.connection_name << ": Connection String is "
+                                        << connection_string;
       try {
         m_socket.bind(connection_string);
         m_connection_info.connection_string = m_socket.get(zmq::sockopt::last_endpoint);
@@ -153,7 +155,7 @@ protected:
         TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_HDR) << m_connection_info.connection_name << ": Going to receive header";
         res = m_socket.recv(hdr);
         TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_HDR_2) << m_connection_info.connection_name << ": Recv res=" << res.value_or(0)
-          << " for header (hdr.size() == " << hdr.size() << ")";
+                                                << " for header (hdr.size() == " << hdr.size() << ")";
       } catch (zmq::error_t const& err) {
         throw ZmqReceiveError(ERS_HERE, m_connection_info.connection_name, err.what(), "header");
       }
@@ -185,8 +187,7 @@ protected:
     }
 
     TLOG_DEBUG(TLVL_ZMQRECEIVER_RECV_END)
-      << m_connection_info.connection_name << ": Returning output with metadata size "
-      << output.metadata.size()
+      << m_connection_info.connection_name << ": Returning output with metadata size " << output.metadata.size()
       << " and data size " << output.data.size();
     return output;
   }
