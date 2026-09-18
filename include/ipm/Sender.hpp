@@ -79,7 +79,7 @@ public:
   {
     std::string connection_name{ "" };
     std::string connection_string{ "inproc://default" };
-    int capacity{ 0 };
+    unsigned int capacity{ 0 };
   };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();
