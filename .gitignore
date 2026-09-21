@@ -3,3 +3,6 @@ out/
 # moo-generated files
 Nljs.hpp
 Structs.hpp
+
+# clang formatting temporary files
+.clang-format*

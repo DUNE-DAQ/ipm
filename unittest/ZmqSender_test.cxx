@@ -40,13 +40,13 @@ BOOST_AUTO_TEST_CASE(Errors)
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
   });
   BOOST_REQUIRE(!the_sender->can_send());
-  
+
   config.connection_string = "tcp://thishostddoesnotexist";
   BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
   });
   BOOST_REQUIRE(!the_sender->can_send());
-  
+
   config.connection_string = "badproto://default";
   BOOST_REQUIRE_EXCEPTION(the_sender->connect_for_sends(config), ZmqOperationError, [&](ZmqOperationError e) {
     return std::string(e.what()).find("Operation failed for all resolved connection strings") != std::string::npos;
