@@ -43,7 +43,8 @@ ERS_DECLARE_ISSUE(ipm,
                   ((std::string)connection_name)((int)bytes1)((int)bytes2)) // NOLINT
 ERS_DECLARE_ISSUE(ipm,
                   ReceiveTimeoutExpired,
-                  connection_name << ": Unable to receive within timeout period (timeout period was " << timeout << " milliseconds)",
+                  connection_name << ": Unable to receive within timeout period (timeout period was " << timeout
+                                  << " milliseconds)",
                   ((std::string)connection_name)((int)timeout)) // NOLINT
 // Reenable coverage collection LCOV_EXCL_STOP
 } // namespace dunedaq
@@ -74,12 +75,12 @@ class Receiver : public opmonlib::MonitorableObject
 {
 
 public:
-    struct ConnectionInfo
-    {
-      std::string connection_name{ "" };
-      std::string connection_string{ "" };
-      std::vector<std::string> connection_strings{};
-    };
+  struct ConnectionInfo
+  {
+    std::string connection_name{ "" };
+    std::string connection_string{ "" };
+    std::vector<std::string> connection_strings{};
+  };
   using duration_t = std::chrono::milliseconds;
   static constexpr duration_t s_block = duration_t::max();
   static constexpr duration_t s_no_block = duration_t::zero();
