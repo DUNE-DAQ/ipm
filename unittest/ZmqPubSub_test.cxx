@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
 
   Sender::ConnectionInfo sender_config("test_sender", "inproc://default");
   Receiver::ConnectionInfo receiver_config("test_receiver", "inproc://default");
-  
+
   the_sender->connect_for_sends(sender_config);
   the_receiver->connect_for_receives(receiver_config);
 
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_sender->can_send());
 
   BOOST_REQUIRE(!the_receiver->data_pending());
-  
+
   the_receiver->subscribe("testTopic");
 
   std::vector<char> test_data{ 'T', 'E', 'S', 'T' };

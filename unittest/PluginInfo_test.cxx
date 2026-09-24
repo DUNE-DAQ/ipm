@@ -12,7 +12,6 @@
 
 #include "boost/test/unit_test.hpp"
 
-
 using namespace dunedaq::ipm;
 
 BOOST_AUTO_TEST_SUITE(PluginInfo_test)
