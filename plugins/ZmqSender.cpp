@@ -57,17 +57,16 @@ public:
     auto base_uri = utilities::ZmqUri(connection_info.connection_string);
 
     if (connection_info.send_endpoint != "") {
-        auto connection_uri = base_uri;
+      auto connection_uri = base_uri;
 
-        if (connection_info.send_endpoint.find(":") != std::string::npos) {
-          connection_uri.endpoint_host =
-            connection_info.send_endpoint.substr(0, connection_info.send_endpoint.find(":"));
-          connection_uri.endpoint_port =
-            connection_info.send_endpoint.substr(connection_info.send_endpoint.find(":") + 1);
-        } else {
-          connection_uri.endpoint_host = connection_info.send_endpoint;
-        }
-        connection_string = connection_uri.to_string();
+      if (connection_info.send_endpoint.find(":") != std::string::npos) {
+        connection_uri.endpoint_host = connection_info.send_endpoint.substr(0, connection_info.send_endpoint.find(":"));
+        connection_uri.endpoint_port =
+          connection_info.send_endpoint.substr(connection_info.send_endpoint.find(":") + 1);
+      } else {
+        connection_uri.endpoint_host = connection_info.send_endpoint;
+      }
+      connection_string = connection_uri.to_string();
     }
 
     TLOG_DEBUG(TLVL_CONNECTIONSTRING) << "Connection String is " << connection_string;
