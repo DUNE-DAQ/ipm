@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(SendReceiveTest)
   BOOST_REQUIRE(the_sender->can_send());
 
   BOOST_REQUIRE(!the_receiver->data_pending());
-  
+
   the_receiver->subscribe("testTopic");
 
   std::vector<char> test_data{ 'T', 'E', 'S', 'T' };
