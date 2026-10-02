@@ -24,6 +24,7 @@ daq_add_plugin(ZmqReceiver duneIPM LINK_LIBRARIES ipm)
 daq_add_plugin(ZmqPublisher duneIPM LINK_LIBRARIES ipm)
 daq_add_plugin(ZmqSubscriber duneIPM LINK_LIBRARIES ipm)
 
+daq_add_unit_test(PluginInfo_test LINK_LIBRARIES ipm)
 daq_add_unit_test(Sender_test LINK_LIBRARIES ipm)
 daq_add_unit_test(Receiver_test LINK_LIBRARIES ipm)
 daq_add_unit_test(Subscriber_test LINK_LIBRARIES ipm)
