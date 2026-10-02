@@ -22,8 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace dunedaq {
-namespace ipm {
+namespace dunedaq::ipm {
 enum class IpmPluginType
 {
   Sender,
@@ -32,18 +31,18 @@ enum class IpmPluginType
   Subscriber
 };
 
+// NOLINTNEXTLINE
 const std::map<IpmPluginType, std::string> ZmqPluginNames{ { IpmPluginType::Sender, "ZmqSender" },
                                                            { IpmPluginType::Receiver, "ZmqReceiver" },
                                                            { IpmPluginType::Publisher, "ZmqPublisher" },
                                                            { IpmPluginType::Subscriber, "ZmqSubscriber" } };
 
-std::string
+inline std::string
 get_recommended_plugin_name(IpmPluginType type)
 {
   return ZmqPluginNames.at(type);
 }
 
-} // namespace ipm
-} // namespace dunedaq
+} // namespace dunedaq::ipm
 
 #endif // IPM_INCLUDE_IPM_PLUGININFO_HPP_

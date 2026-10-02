@@ -65,7 +65,7 @@ public:
     auto hwm = connection_info.capacity;
     if (hwm > 0) {
       try {
-        m_socket.set(zmq::sockopt::sndhwm, hwm);
+        m_socket.set(zmq::sockopt::sndhwm, static_cast<int>(hwm));
       } catch (zmq::error_t const& err) {
         throw ZmqOperationError(ERS_HERE,
                                 m_connection_info.connection_name,
@@ -127,6 +127,7 @@ protected:
       }
 
       if (!res || res != topic.size()) {
+        usleep(1000);
         TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << m_connection_info.connection_name << ": Unable to send message";
         continue;
       }
