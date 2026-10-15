@@ -29,7 +29,7 @@ public:
 
   ~ZmqReceiver()
   {
-    unregister_callback();
+    unregister_callback(); // NOLINT (this call is safe regardless of source destructor)
     // Probably (cpp)zmq does this in the socket dtor anyway, but I guess it doesn't hurt to be explicit
     if (m_connection_info.connection_string != "" && m_socket_connected) {
       try {
