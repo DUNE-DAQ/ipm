@@ -127,6 +127,7 @@ protected:
       }
 
       if (!res || res != topic.size()) {
+        usleep(1000);
         TLOG_DEBUG(TLVL_ZMQSENDER_SEND_ERR) << m_connection_info.connection_name << ": Unable to send message";
         continue;
       }
