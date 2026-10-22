@@ -26,7 +26,7 @@ main(int argc, char* argv[])
   uint32_t npackets = 1; // NOLINT(build/unsigned)
   size_t packetSize = 100;
   size_t interval = 0;
-  std::string conString = "tcp://127.0.0.1:12345";
+  std::string conString = "tcp://127.0.0.2:*;127.0.0.1:12345";
   int nthreads = 1;
   uint32_t id = 0; // NOLINT(build/unsigned)
 
