@@ -80,7 +80,7 @@ public:
   {
     std::string connection_name{ "" };
     std::string connection_string{ "inproc://default" };
-    unsigned int capacity{ 0 };
+    int capacity{ 0 };
     std::string send_endpoint{ "" };
   };
   using duration_t = std::chrono::milliseconds;

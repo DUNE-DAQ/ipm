@@ -79,7 +79,7 @@ public:
 
     if (capacity > 0) {
       try {
-        m_socket.set(zmq::sockopt::sndhwm, static_cast<int>(capacity));
+        m_socket.set(zmq::sockopt::sndhwm, capacity);
       } catch (zmq::error_t const& err) {
         throw ZmqOperationError(
           ERS_HERE, m_connection_info.connection_name, "set hwm", "send", err.what(), connection_string);
